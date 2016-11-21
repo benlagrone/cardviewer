@@ -73,23 +73,18 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 return $http({
                     method:'GET',
-                    url:httpWorker.apiRoot.dev+'/foo',
+                    url:httpWorker.apiRoot.getPath()+'/foo',
                     headers:httpWorker.reqSpecs.headers
                 })
             } else {
                 console.log('not logged in')
                 logoutService.logout()
             }
-            // return $http({
-            //     method:'GET',
-            //     url:''
-            //     // headers:
-            // })
         };
         httpWorker.getAuth = function(myCookie){
             return $http({
                     method:'GET',
-                    url:httpWorker.apiRoot.dev+'/Authorize/' + myCookie,
+                    url:httpWorker.apiRoot.getPath()+'/Authorize/' + myCookie,
                     headers:httpWorker.reqSpecs.headers
                 }
             )
@@ -99,22 +94,25 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
         };
         httpWorker.getLogin = function(user){
             return $http({
-                url:httpWorker.apiRoot.dev+'/Authorize/login/'+user.userName+'/'+user.password,
+                url:httpWorker.apiRoot.getPath()+'/Authorize/login/'+user.userName+'/'+user.password,
                 method:'GET',
                 headers:''
             })
         };
         httpWorker.apiRoot = {
-            prod: "https://prometheus.mdanderson.edu/dataapi",
-            dev: "https://gumedonc-dev.mdanderson.edu/dataapi",
-            local: "http://localhost:56700/",
-            prodRoot: "https://prometheus.mdanderson.edu",
-            devRoot: "https://gumedonc-dev.mdanderson.edu",
-            localRoot: "http://localhost:56700"
-        };
-        httpWorker.keys = {
-            id:'beb4f299-cdeb-4de6-a993-05e7f593505e',
-            appSecret:'dd84b31f-9bef-4b98-95a8-8953ebc9a50f'
+            //set setState as dev, prod, or local
+            setState:'dev',
+            prod: 'https://prometheus.mdanderson.edu/dataapi',
+            dev: 'https://gumedonc-dev.mdanderson.edu/dataapi',
+            local: 'http://localhost:56700/',
+            prodRoot: 'https://prometheus.mdanderson.edu',
+            devRoot: 'https://gumedonc-dev.mdanderson.edu',
+            localRoot: 'http://localhost:56700',
+            getPath: function(){
+                var thePath = httpWorker.apiRoot.dev;
+
+                return thePath;
+            }
         };
         httpWorker.reqSpecs = {
             method:'',
@@ -130,34 +128,6 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
             }
         };
         return httpWorker;
-    })
-    .service('ajaxService',function(){
-        var ajaxWorker = {}
-        ajaxWorker.apiRoot = {
-            prod: "https://prometheus.mdanderson.edu/dataapi",
-            dev: "https://gumedonc-dev.mdanderson.edu/dataapi",
-            local: "http://localhost:56700/",
-            prodRoot: "https://prometheus.mdanderson.edu",
-            devRoot: "https://gumedonc-dev.mdanderson.edu",
-            localRoot: "http://localhost:56700"
-        };
-        ajaxWorker.keys = {
-            id:'beb4f299-cdeb-4de6-a993-05e7f593505e',
-            appSecret:'dd84b31f-9bef-4b98-95a8-8953ebc9a50f'
-        };
-        ajaxWorker.reqSpecs = {
-            method:'',
-            url:'',
-            headers:{
-                'content-type':'application/json',
-                'cache-control':'no-cache',
-                //'Cookie':'',
-                'ARC_UserToken':'',
-                'ArcAppPublicKey':'beb4f299-cdeb-4de6-a993-05e7f593505e',
-                'ArcAppPrivateKey':'da0300e5-fde0-4392-938e-02dc71610e93'
-            }
-        };
-        return ajaxWorker;
     })
     .service('trackPageAccess',function($window,$http){
         var trackingWorker = {};
