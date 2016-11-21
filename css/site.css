@@ -1,0 +1,26 @@
+.GreyText {
+    color: grey;
+}
+.GreyText:hover {
+    color: darkgrey;
+}
+.bottomMenu {
+    text-align: center;
+    margin-top: 15px;
+    padding-left: 15px;
+}
+.badge {
+    position: absolute;
+    display: inline-block;
+    min-width: 10px;
+    padding: 3px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: #fd1212;
+    border-radius: 10px;
+}
