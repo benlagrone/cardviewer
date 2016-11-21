@@ -1,5 +1,227 @@
-<html>
-    <body>
-        Hello, git world!
-    </body>
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/PrometheusSquareLogo114X114.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="img/PrometheusSquareLogo144X144.png" />
+    <link rel="icon" type="image/png" href="img/PrometheusFavIcon.png">
+    <link rel="icon" sizes="192x192" href="img/PrometheusSquareLogo192X192.png">
+    <title>Prometheus - Home</title>
+
+    <!-- Material Design Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Material Design Bootstrap -->
+    <link href="css/mdb.css" rel="stylesheet">
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <style>
+        .GreyText {
+            color: grey;
+        }
+
+            .GreyText:hover {
+                color: darkgrey;
+            }
+
+        .bottomMenu {
+            text-align: center;
+            margin-top: 15px;
+            padding-left: 15px;
+        }
+
+        .badge {
+            position: absolute;
+            display: inline-block;
+            min-width: 10px;
+            padding: 3px 7px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            background-color: #fd1212;
+            border-radius: 10px;
+        }
+    </style>
+
+</head>
+
+<body class="grey lighten-3">
+    <nav class="navbar white" style="border-bottom: 1px solid #9e9e9e;">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand waves-effect waves-light" href="index.html"><img src="img/Prometheus-Logo.png" /></a>
+            </div>
+            <ul class="nav navbar-nav navbar-left hidden-xs">
+                <li><a href="index.html" style="color:black; font-weight:300; font-size:12pt"><i class="fa fa-cogs fa-lg GreyText"></i> Configure</a></li>
+                <li><a href="plan.html"  style="color:black; font-weight:300; font-size:12pt"><i class="fa fa-file-text fa-lg  GreyText"></i> Plan</a></li>
+                <li><a href="patients.html"  style="color:black; font-weight:300; font-size:12pt"><i class="fa fa-users fa-lg GreyText"></i> Patient</a></li>
+                <li><a href="protocol.html"  style="color:black; font-weight:300; font-size:12pt"><i class="fa fa-share-alt fa-lg GreyText"></i> Protocol</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right hidden-xs">
+                <li role="presentation" class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                        <span class="GreyText">Welcome back </span><span class="GreyText" ></span> <span class="caret GreyText"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#"><i class="material-icons GreyText">exit to app</i> <span class="GreyText">Log Out</span></a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+       
+    </div>
+
+    <!--<nav class="navbar navbar-default navbar-fixed-bottom visible-xs">
+        <div class="container-fluid">
+            <div class="col-xs-6">
+                <div class="dropup" style="margin-left: -20px;">
+                    <button class="btn primary-rounded-outline dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="GreyText" data-bind="text: user().fullName"></span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                        <li><a href="#" onclick="logout()"><i class="material-icons GreyText">exit to app</i> <span class="GreyText">Log Out</span></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>-->
+
+
+    <!-- SCRIPTS -->
+    <!-- JQuery -->
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+
+    <!-- Material Design Bootstrap -->
+    <script type="text/javascript" src="packages/mdb/mdb.js"></script>
+
+    <script type="text/javascript" src="js/modules/picker-date.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-debug.js"></script>
+
+    <script type="text/javascript" src="js/moment.js"></script>
+
+    <!-- Cookie Support -->
+    <script type="text/javascript" src="js/jquery.cookie.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js"></script>
+
+    <script type="text/javascript" src="js/DataGrouper.js"></script>
+
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-full-width",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+
+        var loaded = false;
+        $(document).ready(function () {
+            $('.list-group li').click(function (e) {
+                e.preventDefault()
+
+                $that = $(this);
+
+                $that.parent().find('li').removeClass('active');
+                $that.addClass('active');
+            });
+
+            //window.hostPath = "https://gumedonc.mdanderson.edu/dataapi";
+            window.hostPath = "https://gumedonc-dev.mdanderson.edu/dataapi";
+
+            renderedHandler = function () {
+                $('.controls').css("display", "inherit");
+
+            }
+
+            logout = function () {
+                $.removeCookie('ARC_UserToken');
+                window.location = "login.html";
+            }
+
+            var cookieValue = $.cookie("ARC_UserToken");
+            if (cookieValue != null) {
+                var url = window.hostPath + '/Authorize/' + cookieValue;
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data != null && data == true) {
+                            window.vm = new indexVM();
+                            var vm = window.vm;
+                            vm.load();
+                            ko.applyBindings(vm);
+                        }
+                        else {
+                            window.location = "login.html";
+                        }
+
+                    },
+                    error: function () {
+                        toastr.error("There was an issue with your authorization.", "Error");
+                    },
+                });
+            }
+            else {
+                window.location = "login.html";
+            }
+        });
+
+        logout = function () {
+            $.removeCookie("ARC_UserToken");
+            window.location = "index.html";
+        }
+
+        google.charts.load("current", { packages: ["corechart"] });
+
+
+    </script>
+
+    <script>
+        $(function () {
+            var path = window.location.href;
+            var width = $(window).width();
+            var height = $(window).height();
+            $.post("/Prometheus/Administration/Tracking/TrackPageAccess", { URL: path, height: height, width: width });
+        });
+    </script>
+
+    <script type="text/javascript" src="js/utility.js"></script>
+</body>
+
 </html>
