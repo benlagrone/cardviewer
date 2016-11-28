@@ -1,12 +1,16 @@
-angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
+angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootstrap'])
     .controller('homeController', function ($scope,httpService) {
         httpService.getSomething().then(function(response){
             console.log(response)
+            $scope.something = response.data
         },function errorCallback(response){
             console.log(response)
         })
         $scope.message = 'Hello Home';
         $scope.foo = null;
+
+        var data = null;
+
     })
     .controller('loginController',function($scope,httpService,$location,$cookies){
         $scope.user = {
@@ -23,7 +27,20 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
         }
     })
     .controller('configureController',function($scope,httpService){
+        $scope.fields = [];
 
+        httpService.getData('Data/Fields').then(function(response){
+            // console.log(response)
+            angular.forEach(response.data,function(value,key){
+                // console.log(value)
+                value.hide = true;
+                $scope.fields.push(value)
+            })
+
+        },function errorCallBack(response){
+            // console.log(response)
+        })
+        console.log($scope)
     })
     .controller('planController',function($scope,httpService){
 
@@ -37,22 +54,47 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
     .controller('requestaccountController',function($scope,httpService){
 
     })
-    .directive('navigation', function ($route,logoutService,trackPageAccess) {
+    .directive('navigation', function ($route,logoutService,trackPageAccess,httpService,$location) {
         return {
             restrict: 'E',
             templateUrl: 'templates/components/navigation.html',
-            link: function (scope) {
-                trackPageAccess.postData();
-                scope.routesArray = [];
-                scope.logOut = function(){
+            link: function ($scope, $element, $attrs) {
+                $scope.location = $location.$$path;
+                $scope.open = false;
+                $scope.userInfo = {}
+                $scope.welcomeButton = function(){
+                    $scope.open = !$scope.open;
+                }
+                $scope.routesArray = [];
+                $scope.logOut = function(){
                     logoutService.logout()
                 };
+                $scope.loggedIn = httpService.checkCookie('ARC_UserToken')!='';
+
                 angular.forEach($route.routes, function (value, key) {
                     value.url = "#" + value.originalPath;
                     if (value.name != undefined) {
-                        scope.routesArray.push(value)
+                        $scope.routesArray.push(value)
                     }
                 });
+
+                $scope.$location = location;
+                $scope.$on("$routeChangeSuccess",function(event,current,previous){
+                    $scope.loggedIn = httpService.checkCookie('ARC_UserToken')!='';
+                    trackPageAccess.postData();
+                    httpService.getUser().then(function(response){
+                        // console.log(response)
+                        $scope.userInfo = response.data;
+                    },function errorCallback(response){
+                        // console.log(response)
+                    })
+                    $scope.open = false;
+
+           //          console.log(current)
+           // console.log(event)
+           //          console.log(previous)
+           //          console.log(httpService.checkCookie('ARC_UserToken')!='')
+                })
             }
         };
     })
@@ -69,15 +111,36 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
         var httpWorker = {};
         httpWorker.getSomething = function(){
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                console.log('logged in')
+                // console.log('logged in')
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+                // console.log(httpWorker.reqSpecs.headers)
                 return $http({
                     method:'GET',
-                    url:httpWorker.apiRoot.getPath()+'/foo',
+                    url:httpWorker.apiRoot.getPath()+'/Data/Fields',
                     headers:httpWorker.reqSpecs.headers
                 })
             } else {
-                console.log('not logged in')
+                // console.log('not logged in')
+                logoutService.logout()
+            }
+        };
+        httpWorker.getUser = function(){
+            return httpWorker.getData('User/',httpWorker.checkCookie('ARC_UserToken'))
+        };
+        httpWorker.getData = function(path1,param,path2){
+            param = param?param:'';
+            path2 = path2?path2:'';
+            if(httpWorker.checkCookie('ARC_UserToken')!=null){
+                // console.log('logged in')
+                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+                // console.log(httpWorker.reqSpecs.headers)
+                return $http({
+                    method:'GET',
+                    url:httpWorker.apiRoot.getPath()+path1+param+path2,
+                    headers:httpWorker.reqSpecs.headers
+                })
+            } else {
+                // console.log('not logged in');
                 logoutService.logout()
             }
         };
@@ -109,7 +172,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
             devRoot: 'https://gumedonc-dev.mdanderson.edu',
             localRoot: 'http://localhost:56700',
             getPath: function(){
-                var thePath = httpWorker.apiRoot.dev;
+                var thePath = httpWorker.apiRoot.local;
 
                 return thePath;
             }
@@ -122,7 +185,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
                 'cache-control':'no-cache',
                 //'Cookie':'',
                 'ARC_UserToken':'',
-                // 'ArcAppPublicKey':'beb4f299-cdeb-4de6-a993-05e7f593505e',
+                'ArcAppPublicKey':'371507A2-C5FB-4842-9AD5-477BA3A33A68',
                 //private key for app
                 'ArcAppPrivateKey':'a48ddc36-dd81-49b6-95fe-dbaaa6a272ac'
             }
@@ -149,45 +212,45 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate'])
     .config(function ($routeProvider) {
         $routeProvider
             .when('/home', {
-                templateUrl: '/templates/home.html',
+                templateUrl: 'templates/home.html',
                 controller: 'homeController',
                 icon:'fa-home'
             })
             .when('/configure', {
-                templateUrl: '/templates/configure.html',
+                templateUrl: 'templates/configure.html',
                 controller: 'configureController',
                 icon:'fa-cogs',
                 name: 'Configure',
                 menu:'main'
             })
-            .when('/plan', {
-                templateUrl: '/templates/plan.html',
-                controller: 'planController',
-                icon:'fa-file-text',
-                name: 'Plan',
-                menu:'main'
-            })
+            // .when('/plan', {
+            //     templateUrl: 'templates/plan.html',
+            //     controller: 'planController',
+            //     icon:'fa-file-text',
+            //     name: 'Plan',
+            //     menu:'main'
+            // })
             .when('/patient', {
-                templateUrl: '/templates/patient.html',
+                templateUrl: 'templates/patient.html',
                 controller: 'patientController',
                 icon:'fa-users',
                 name: 'Patient',
                 menu:'main'
             })
             .when('/requestaccount', {
-                templateUrl: '/templates/requestaccount.html',
+                templateUrl: 'templates/requestaccount.html',
                 controller: 'requestaccountController',
                 icon:'fa-share-alt'
             })
             .when('/protocol', {
-                templateUrl: '/templates/protocol.html',
+                templateUrl: 'templates/protocol.html',
                 controller: 'protocolController',
                 icon:'fa-share-alt',
                 name: 'Protocol',
                 menu:'main'
             })
             .when('/login', {
-                templateUrl: '/templates/login.html',
+                templateUrl: 'templates/login.html',
                 controller: 'loginController',
                 icon:''
             })

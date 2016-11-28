@@ -6,21 +6,37 @@
                 <span><img src="img/PrometheusFavIcon.png" width="30" height="30"/></span> Data
             </a>
         </div>
-        <ul class="nav navbar-nav navbar-left hidden-xs">
-            <li><a ng-repeat="item in routesArray" href="{{item.url}}" style="color:black; font-weight:300; font-size:12pt"><i class="fa {{item.icon}} fa-lg GreyText"></i>&nbsp;{{item.name}}</a></li>
+        <ul class="nav navbar-nav navbar-left" ng-if="loggedIn">
+            <li  ng-repeat="item in routesArray" >
+                <a href="{{item.url}}" style="color:black; font-weight:300; font-size:12pt">
+                    <i class="fa {{item.icon}} fa-lg GreyText"></i>
+                    <span class="">&nbsp;{{item.name}}</span>
+                </a>
+            </li>
         </ul>
-        <ul class="nav navbar-nav navbar-right hidden-xs">
-            <li role="presentation" class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                    <span class="GreyText">Welcome back </span>
+        <ul class="nav navbar-nav navbar-right"  ng-if="loggedIn">
+            <li role="presentation" class="dropdown {{open?'open':''}}">
+                <a ng-click="welcomeButton()"
+                   class="dropdown-toggle"
+                   data-toggle="dropdown"
+
+                   role="button"
+                   aria-haspopup="true"
+                   aria-expanded="false">
+                    <span class="GreyText">Welcome back {{userInfo.fullName}}</span>
                     <span class="GreyText" ></span>
                     <span class="caret GreyText"></span>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="#"><i class="material-icons GreyText">exit to app</i> <span class="GreyText">Log Out</span></a></li>
+                    <li>
+                        <a  ng-click="logOut()">
+                            <i class="material-icons GreyText">exit to app</i>
+                            <span class="GreyText">Log Out</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
-            <li><button ng-click="logOut()">Logout</button></li>
+
         </ul>
     </div>
 </nav>

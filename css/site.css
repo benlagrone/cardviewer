@@ -24,3 +24,8 @@
     background-color: #fd1212;
     border-radius: 10px;
 }
+@media (min-width: 768px)
+    .navbar-nav>li {
+        float: left;
+    }
+}

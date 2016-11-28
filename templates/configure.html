@@ -1,1 +1,161 @@
-configure
+<style>
+    #searchHeader {
+        background: #4285f4;
+        color: white;
+        border-width: 1px;
+        cursor: pointer;
+        font-size: 1.5em;
+        margin: -20px -20px 0 -20px;
+        width: 106%;
+        transition: background .15s;
+    }
+
+    #searchFilter > div > input {
+        margin: 10px 0;
+        background: rgba(255, 255, 255, .15);
+        padding: 2px 0px 0px 10px;
+        border-bottom: none;
+    }
+
+    #searchFilter > div > input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+        color: white;
+        text-transform: capitalize;
+        font-size: 1.2REM;
+    }
+
+    #searchFilter > div > input::-moz-placeholder { /* Firefox 19+ */
+        color: white;
+        text-transform: capitalize;
+        font-size: 1.2REM;
+    }
+
+    #searchFilter > div > input:-ms-input-placeholder { /* IE 10+ */
+        color: white;
+        text-transform: capitalize;
+        font-size: 1.2REM;
+    }
+
+    #searchFilter > div > input:-moz-placeholder { /* Firefox 18- */
+        color: white;
+        text-transform: capitalize;
+        font-size: 1.2REM;
+    }
+
+    .form-control {
+        font-family: "FontAwesome"
+    }
+
+    #fields > div {
+        outline: 2px solid transparent;
+        background: white;
+        bottom: 0;
+        box-shadow: rgb(224, 224, 224) 0px -1px 0px 0px, rgba(0, 0, 0, 0.117647) 0px 0px 2px 0px, rgba(0, 0, 0, 0.239216) 0px 2px 4px 0px;
+
+    }
+    #fields > div > h6{
+        width: 104%;
+        margin: 10px 0 10px -2%;
+        padding: 0 0 3px 1%;
+    }
+    #fields > div ul.controls{
+        float:right;
+        margin-bottom:0px;
+    }
+    #fields > div ul.controls li{
+
+        float:right;
+        display:inline;
+        color:#999;
+        padding:3px;
+    }
+    #fields > div > ul{
+        border-top: 1px solid silver;
+
+    }
+    #fields > div > ul .label{
+        color: #666;
+        font-size: .9REM;
+        width: 25%;
+        display: inline-block;
+        text-align: left;
+    }
+    #fields > div.active{
+        margin: 20px -2%;
+        width: 105%;
+    }
+    .animate-hide {
+        transition: all linear 0.5s;
+        line-height: 20px;
+        opacity: 1;
+    }
+
+    .animate-hide.ng-hide {
+        line-height: 0;
+        line-height: 0px;
+        opacity: 0;
+    }
+
+</style>
+<div id="searchHeader" class="row">
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"><h5>Fields</h5></div>
+    <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6">
+        <div id="searchFilter" class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
+                <input
+                        class="form-control"
+                        aria-label="Search"
+                        placeholder="&#xf002;"
+                        aria-autocomplete="both"
+                        aria-haspopup="true"
+
+                        spellcheck="false"
+                        type="text"
+
+                        tabindex="0">
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
+</div>
+
+<div id="fieldsData" class="row">
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
+    <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8">
+        <div id="fields" class="row">
+            <h6>Active Fields</h6>
+            <div ng-repeat="items in fields" class="col-md-12 col-sm-12 col-xs-12 col-lg-12 animate-hide {{items.hide?'':'active'}}"  >
+
+                <div class="row fieldControls" >
+                    <div class="col-md-9 col-sm-9 col-xs-9 col-lg-9">
+                        <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
+                    </div>
+                    <div class="col-md-3 col-sm-3 col-xs-3 col-lg-3">
+                        <ul class="controls" ng-hide="items.hide">
+                            <li ng-hide="items.hide"><i class="fa fa-pencil-square fa-2x" aria-hidden="true"></i></li>
+                            <li ng-hide="items.hide"><i class="fa fa-minus-square fa-2x" aria-hidden="true"></i></li>
+                        </ul>
+                    </div>
+                </div>
+
+
+
+                <ul class="animate-hide" ng-hide="items.hide">
+                    <li><span class="label">instructions</span><span class="field">{{items.instructions}}</span></li>
+                    <li><span class="label">displayName</span><span class="field">{{items.displayName}}</span></li>
+                    <li><span class="label">canBeAutomated</span><span class="field">{{items.canBeAutomated}}</span></li>
+                    <li><span class="label">categoryId</span><span class="field">{{items.categoryId}}</span></li>
+                    <li><span class="label">categoryName</span><span class="field">{{items.categoryName}}</span></li>
+                    <li><span class="label">createdById</span><span class="field">{{items.createdById}}</span></li>
+                    <li><span class="label">createdDate</span><span class="field">{{items.createdDate}}</span></li>
+                    <li><span class="label">modifiedById</span><span class="field">{{items.modifiedById}}</span></li>
+                    <li><span class="label">modifiedDate</span><span class="field">{{items.modifiedDate}}</span></li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
+</div>
+<div id="" class="row">
+
+</div>

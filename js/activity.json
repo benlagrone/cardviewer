@@ -1,0 +1,41 @@
+[
+  {
+    "Id":"Activity Activity Id 1",
+  "Name":"Activity Name 1",
+  "Category":"Activity Category 1",
+  "Description":"Activity Description 1",
+  "IsMasterActivity":"Activity IsMasterActivity 1",
+  "DepartmentId":"Activity DepartmentId 1",
+  "Fields":[
+    {"Id": "Field Id1"},
+    {"Id": "Field Id2"},
+    {"Id": "Field Id3"}
+  ]
+},
+  {
+    "Id":"Activity Activity Id 2",
+    "Name":"Activity Name 2",
+    "Category":"Activity Category 2",
+    "Description":"Activity Description 2",
+    "IsMasterActivity":"Activity IsMasterActivity 2",
+    "DepartmentId":"Activity DepartmentId 2",
+    "Fields":[
+      {"Id": "Field Id1"},
+      {"Id": "Field Id2"},
+      {"Id": "Field Id3"}
+    ]
+  },
+  {
+    "Id":"Activity Activity Id 3",
+    "Name":"Activity Name 3",
+    "Category":"Activity Category 3",
+    "Description":"Activity Description 3",
+    "IsMasterActivity":"Activity IsMasterActivity 3",
+    "DepartmentId":"Activity DepartmentId 3",
+    "Fields":[
+      {"Id": "Field Id1"},
+      {"Id": "Field Id2"},
+      {"Id": "Field Id3"}
+    ]
+  },
+]
