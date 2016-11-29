@@ -83,6 +83,12 @@
         margin: 20px -2%;
         width: 105%;
     }
+    #searchFilter input{
+        color:white;
+    }
+    .fieldControls{
+        padding-top:6px;
+    }
     .animate-hide {
         transition: all linear 0.5s;
         line-height: 20px;
@@ -102,15 +108,15 @@
         <div id="searchFilter" class="row">
             <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
                 <input
+                       ng-model="selected"
+                       uib-typeahead="items.name for items in fields | filter:$viewValue | limitTo:8"
                         class="form-control"
                         aria-label="Search"
                         placeholder="&#xf002;"
                         aria-autocomplete="both"
                         aria-haspopup="true"
-
                         spellcheck="false"
                         type="text"
-
                         tabindex="0">
             </div>
         </div>
@@ -123,7 +129,10 @@
     <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8">
         <div id="fields" class="row">
             <h6>Active Fields</h6>
-            <div ng-repeat="items in fields" class="col-md-12 col-sm-12 col-xs-12 col-lg-12 animate-hide {{items.hide?'':'active'}}"  >
+            <div
+                    ng-repeat="items in fields | filter:selected"
+                    class="col-md-12 col-sm-12 col-xs-12 col-lg-12 animate-hide {{items.hide?'':'active'}}"
+            >
 
                 <div class="row fieldControls" >
                     <div class="col-md-9 col-sm-9 col-xs-9 col-lg-9">
@@ -131,8 +140,15 @@
                     </div>
                     <div class="col-md-3 col-sm-3 col-xs-3 col-lg-3">
                         <ul class="controls" ng-hide="items.hide">
-                            <li ng-hide="items.hide"><i class="fa fa-pencil-square fa-2x" aria-hidden="true"></i></li>
-                            <li ng-hide="items.hide"><i class="fa fa-minus-square fa-2x" aria-hidden="true"></i></li>
+                            <li ng-hide="items.hide">
+                                <i ng-click="items.edit=!items.edit" class="fa fa-pencil-square fa-2x" aria-hidden="true"></i>
+                            </li>
+                            <li ng-hide="items.hide">
+                                <i class="fa fa-minus-square fa-2x" aria-hidden="true"></i>
+                            </li>
+                            <li ng-hide="items.hide" >
+                                <i ng-click="submitChanges(items)" ng-hide="!items.edit" class="fa fa-paper-plane fa-2x" aria-hidden="true" style="color:green;"></i>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -140,15 +156,62 @@
 
 
                 <ul class="animate-hide" ng-hide="items.hide">
-                    <li><span class="label">instructions</span><span class="field">{{items.instructions}}</span></li>
-                    <li><span class="label">displayName</span><span class="field">{{items.displayName}}</span></li>
-                    <li><span class="label">canBeAutomated</span><span class="field">{{items.canBeAutomated}}</span></li>
-                    <li><span class="label">categoryId</span><span class="field">{{items.categoryId}}</span></li>
-                    <li><span class="label">categoryName</span><span class="field">{{items.categoryName}}</span></li>
-                    <li><span class="label">createdById</span><span class="field">{{items.createdById}}</span></li>
-                    <li><span class="label">createdDate</span><span class="field">{{items.createdDate}}</span></li>
-                    <li><span class="label">modifiedById</span><span class="field">{{items.modifiedById}}</span></li>
-                    <li><span class="label">modifiedDate</span><span class="field">{{items.modifiedDate}}</span></li>
+                    <li>
+                        <span class="label">instructions</span>
+                        <span ng-hide="items.edit" class="field">{{items.instructions}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.instructions" />
+                       </span>
+                    </li>
+                    <li>
+                        <span class="label">displayName</span>
+                        <span ng-hide="items.edit" class="field">{{items.displayName}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.displayName" />
+                       </span>
+                    </li>
+                    <li><span class="label">canBeAutomated</span>
+                        <span ng-hide="items.edit" class="field">{{items.canBeAutomated}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.canBeAutomated" />
+                       </span>
+                    </li>
+                    <li><span class="label">categoryId</span>
+                        <span ng-hide="items.edit" class="field">{{items.categoryId}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.categoryId" />
+                       </span>
+                    </li>
+                    <li><span class="label">categoryName</span>
+                        <span ng-hide="items.edit" class="field">{{items.categoryName}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.categoryName" />
+                       </span>
+                    </li>
+                    <li><span class="label">createdById</span>
+                        <span ng-hide="items.edit" class="field">{{items.createdById}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.createdById" />
+                       </span>
+                    </li>
+                    <li><span class="label">createdDate</span>
+                        <span ng-hide="items.edit" class="field">{{items.createdDate}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.createdDate" />
+                       </span>
+                    </li>
+                    <li><span class="label">modifiedById</span>
+                        <span ng-hide="items.edit" class="field">{{items.modifiedById}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.modifiedById" />
+                       </span>
+                    </li>
+                    <li><span class="label">modifiedDate</span>
+                        <span ng-hide="items.edit" class="field">{{items.modifiedDate}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                        <input ng-model="items.modifiedDate" />
+                        </span>
+                    </li>
                 </ul>
 
             </div>

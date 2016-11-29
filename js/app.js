@@ -34,12 +34,22 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             angular.forEach(response.data,function(value,key){
                 // console.log(value)
                 value.hide = true;
+                value.edit = false;
                 $scope.fields.push(value)
             })
 
         },function errorCallBack(response){
             // console.log(response)
         })
+        $scope.submitChanges = function(items){
+            console.log(items)
+            console.log($scope.fields)
+            httpService.putData('Data/Field/',items.id,items).then(function(response){
+                console.log(response)
+            },function errorCallabck(response){
+                console.log(response)
+            })
+        }
         console.log($scope)
     })
     .controller('planController',function($scope,httpService){
@@ -127,6 +137,24 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
         httpWorker.getUser = function(){
             return httpWorker.getData('User/',httpWorker.checkCookie('ARC_UserToken'))
         };
+        httpWorker.putData = function(path1,param,data){
+            param = param?param:'';
+            path2 = path2?path2:'';
+            if(httpWorker.checkCookie('ARC_UserToken')!=null){
+                // console.log('logged in')
+                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+                // console.log(httpWorker.reqSpecs.headers)
+                return $http({
+                    method:'PUT',
+                    url:httpWorker.apiRoot.getPath()+path1+param+path2,
+                    data:data,
+                    headers:httpWorker.reqSpecs.headers
+                })
+            } else {
+                // console.log('not logged in');
+                logoutService.logout()
+            }
+        };
         httpWorker.getData = function(path1,param,path2){
             param = param?param:'';
             path2 = path2?path2:'';
@@ -165,8 +193,8 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
         httpWorker.apiRoot = {
             //set setState as dev, prod, or local
             setState:'dev',
-            prod: 'https://prometheus.mdanderson.edu/dataapi',
-            dev: 'https://gumedonc-dev.mdanderson.edu/dataapi',
+            prod: 'https://prometheus.mdanderson.edu/dataapi/',
+            dev: 'https://gumedonc-dev.mdanderson.edu/dataapi/',
             local: 'http://localhost:56700/',
             prodRoot: 'https://prometheus.mdanderson.edu',
             devRoot: 'https://gumedonc-dev.mdanderson.edu',
