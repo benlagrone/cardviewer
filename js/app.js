@@ -139,14 +139,14 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
         };
         httpWorker.putData = function(path1,param,data){
             param = param?param:'';
-            path2 = path2?path2:'';
+            //path2 = path2?path2:'';
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
                 // console.log('logged in')
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 // console.log(httpWorker.reqSpecs.headers)
                 return $http({
                     method:'PUT',
-                    url:httpWorker.apiRoot.getPath()+path1+param+path2,
+                    url:httpWorker.apiRoot.getPath()+path1+param,
                     data:data,
                     headers:httpWorker.reqSpecs.headers
                 })
