@@ -28,7 +28,22 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
     })
     .controller('configureController',function($scope,httpService){
         $scope.fields = [];
-
+        $scope.newField = {};
+        $scope.addSymbol = 'fa-plus-square';
+        $scope.hideNew = true;
+        $scope.hideDrawer = true;
+        $scope.drawerSymbol ='fa-list';
+        $scope.closeDrawerSymbol = 'fa-times-circle';
+        $scope.hideFieldSearch = true;
+        $scope.addMouseOver = function(){
+            $scope.addSymbol = 'fa-pencil-square';
+        };
+        $scope.searchFields;
+        $scope.addMouseLeave = function(){
+            $scope.addSymbol = 'fa-plus-square';
+        };
+        $scope.addClick = function(){
+        };
         httpService.getData('Data/Fields').then(function(response){
             // console.log(response)
             angular.forEach(response.data,function(value,key){
@@ -37,10 +52,21 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
                 value.edit = false;
                 $scope.fields.push(value)
             })
-
         },function errorCallBack(response){
             // console.log(response)
-        })
+        });
+        $scope.clearNew = function(){
+            $scope.newField = {};
+            $scope.hideNew = true;
+        };
+        $scope.postNew = function(){
+            console.log($scope.newField)
+            httpService.postData('Data/Field/',$scope.newField).then(function(response){
+                console.log(response)
+            },function errorCallabck(response){
+                console.log(response)
+            })
+        };
         $scope.submitChanges = function(items){
             console.log(items)
             console.log($scope.fields)
@@ -49,7 +75,33 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             },function errorCallabck(response){
                 console.log(response)
             })
-        }
+        };
+        $scope.drawerMouseLeave = function(){
+            $scope.drawerSymbol = 'fa-list'
+        };
+        $scope.drawerMouseOver = function(){
+            $scope.drawerSymbol = 'fa-arrow-left'
+        };
+        $scope.closeDrawerMouseOver = function(){
+            if($scope.closeDrawerSymbol != 'fa-arrow-circle-right')
+            $scope.closeDrawerSymbol = 'fa-arrow-circle-right';
+        };
+        $scope.closeDrawerMouseLeave = function(){
+            if($scope.closeDrawerSymbol != 'fa-times-circle')
+            $scope.closeDrawerSymbol = 'fa-times-circle';
+        };
+        $scope.showFieldSearch = function(){
+            $scope.hideFieldSearch = false;
+        };
+        $scope.searchFieldsMouseLeave = function(){
+            if(!$scope.searchFields)
+            $scope.hideFieldSearch = true;
+        };
+        $scope.showDrawerClose = function(){
+            $scope.hideDrawer=true;
+            $scope.searchFields = undefined;
+            $scope.hideFieldSearch = true;
+        };
         console.log($scope)
     })
     .controller('planController',function($scope,httpService){
@@ -152,6 +204,20 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
         };
         httpWorker.getUser = function(){
             return httpWorker.getData('User/',httpWorker.checkCookie('ARC_UserToken'))
+        };
+        httpWorker.postData = function(path1,data){
+            if(httpWorker.checkCookie('ARC_UserToken')!=null){
+                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+                return $http({
+                    method:'POST',
+                    url:httpWorker.apiRoot.getPath()+path1,
+                    data:data,
+                    headers:httpWorker.reqSpecs.headers
+                })
+            } else {
+                // console.log('not logged in');
+                logoutService.logout()
+            }
         };
         httpWorker.putData = function(path1,param,data){
             param = param?param:'';
