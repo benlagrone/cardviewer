@@ -114,6 +114,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             console.log('logging out now');
             $cookies.put('ARC_UserToken','')
             $location.path('/login')
+            return;
         };
         return logoutWorker;
     })
@@ -124,6 +125,21 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
                 // console.log('logged in')
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 // console.log(httpWorker.reqSpecs.headers)
+
+                httpWorker.getAuth(httpWorker.checkCookie('ARC_UserToken')).then(function(response){
+                    console.log(response)
+                    if(response.data===true){
+                        console.log(response.data)
+
+                    } else {
+                        return response;
+                        console.log('not logged in');
+                        logoutService.logout()
+                    }
+                },function errorCallback(response){
+                    console.log(response)
+                });
+
                 return $http({
                     method:'GET',
                     url:httpWorker.apiRoot.getPath()+'/Data/Fields',
@@ -159,8 +175,16 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             param = param?param:'';
             path2 = path2?path2:'';
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                // console.log('logged in')
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+                httpWorker.getAuth(httpWorker.checkCookie('ARC_UserToken')).then(function(response){
+                    if(response.data!=true){
+                        console.log('not logged in');
+                        logoutService.logout()
+                    }
+
+                },function errorCallback(response){
+                    console.log(response)
+                });
                 // console.log(httpWorker.reqSpecs.headers)
                 return $http({
                     method:'GET',
