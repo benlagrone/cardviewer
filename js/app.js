@@ -28,6 +28,11 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
     })
     .controller('configureController',function($scope,httpService){
         $scope.fields = [];
+        $scope.activities = [];
+        $scope.restore = {
+            fields : [],
+            activities : []
+        };
         $scope.newField = {};
         $scope.addSymbol = 'fa-plus-square';
         $scope.hideNew = true;
@@ -35,6 +40,8 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
         $scope.drawerSymbol ='fa-list';
         $scope.closeDrawerSymbol = 'fa-times-circle';
         $scope.hideFieldSearch = true;
+        $scope.addFieldstoActivityTitle;
+        $scope.workingActivity;
         $scope.addMouseOver = function(){
             $scope.addSymbol = 'fa-pencil-square';
         };
@@ -44,16 +51,26 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
         };
         $scope.addClick = function(){
         };
-        httpService.getData('Data/Fields').then(function(response){
-            // console.log(response)
+        httpService.getData('Data/Activities').then(function(response){
             angular.forEach(response.data,function(value,key){
-                // console.log(value)
                 value.hide = true;
                 value.edit = false;
-                $scope.fields.push(value)
+                $scope.activities.push(value);
+                $scope.restore.activities.push(value);
             })
+
         },function errorCallBack(response){
             // console.log(response)
+        });
+        httpService.getData('Data/Fields').then(function(response){
+            angular.forEach(response.data,function(value,key){
+                value.hide = true;
+                value.edit = false;
+                value.showIncluded = false;
+                $scope.fields.push(value);
+                $scope.restore.fields.push(value);
+            })
+        },function errorCallBack(response){
         });
         $scope.clearNew = function(){
             $scope.newField = {};
@@ -68,8 +85,6 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             })
         };
         $scope.submitChanges = function(items){
-            console.log(items)
-            console.log($scope.fields)
             httpService.putData('Data/Field/',items.id,items).then(function(response){
                 console.log(response)
             },function errorCallabck(response){
@@ -106,6 +121,50 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             $scope.hideDrawer=true;
             $scope.searchFields = undefined;
             $scope.hideFieldSearch = true;
+        };
+        $scope.showFieldInDrawer = function(fieldId){
+            $scope.hideDrawer = false;
+            $scope.searchFields = fieldId;
+            $scope.hideFieldSearch = false;
+        };
+        $scope.addAFieldToActivity = function(activity){
+            $scope.workingActivity = activity;
+            $scope.hideDrawer = false;
+            $scope.addFieldstoActivityTitle = activity.name;
+            angular.forEach($scope.fields,function(value,index){
+                $scope.fields[index].showIncluded = false;
+                angular.forEach(activity.fields,function(value2,index2){
+                    if(value2.id===value.id){
+                        $scope.fields[index].showIncluded = true;
+                    }
+                })
+            })
+        };
+        $scope.addThisFieldToActivity = function(obj,field){
+            angular.forEach($scope.activities,function(value,index){
+                if(value.id===$scope.workingActivity.id){
+                    if(obj.target.attributes.data.value==="add"){
+                        value.fields.push(field);
+                        value.edit=true;
+                    }
+                    if(obj.target.attributes.data.value==="remove"){
+                        var foundIndex = undefined;
+                        angular.forEach(value.fields,function(Fvalue,Findex){
+                            if(Fvalue.id===field.id){
+                                foundIndex = Findex;
+                            }
+                        });
+                        value.fields.splice(foundIndex,1);
+                        value.edit=true;
+                    }
+                }
+            })
+        };
+        $scope.clearWorkingActivity = function(){
+            $scope.workingActivity = undefined;
+        };
+        $scope.undoChanges = function(item){
+            //clear the scope
         };
         console.log($scope)
     })

@@ -1,5 +1,5 @@
 body{
-    overflow:hidden!important;
+    overflow-x:hidden!important;
 }
 .GreyText {
     color: grey;
@@ -27,8 +27,8 @@ body{
     background-color: #fd1212;
     border-radius: 10px;
 }
-@media (min-width: 768px){
-    .navbar-nav>li {
+@media (min-width: 768px) {
+    .navbar-nav > li {
         float: left;
     }
 }
@@ -68,8 +68,13 @@ body{
     text-transform: capitalize;
     font-size: 1.2REM;
 }
-.form-control {
-    font-family: "FontAwesome"
+/*.form-control {*/
+    /*font-family: roboto;*/
+/*}*/
+
+#searchHeader .form-control, #drawerRow .form-control{
+    font-family: "FontAwesome";
+    color:white;
 }
 .fields > div, #newFieldRow > .fields {
     outline: 2px solid transparent;
@@ -125,9 +130,14 @@ body{
     margin: 20px -2%;
     width: 105%;
 }
-#searchFilter input {
-    color: white;
-}
+/*#searchFilter input:focus {*/
+    /*color: white;*/
+    /*font-family: roboto;*/
+/*}*/
+/*#searchFilter input{*/
+
+    /*font-family: "FontAwesome"*/
+/*}*/
 .fieldControls {
     padding-top: 6px;
 }
@@ -151,12 +161,12 @@ body{
     font-size: 4REM;
     color: #673AB7;
     cursor: pointer;
-    position: absolute;
+    position: fixed;
     bottom: 2%;
     left: 2%;
 }
 #newFieldRow {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     width: 100%;
 
@@ -165,7 +175,7 @@ body{
     height: 0;
 }
 #drawerRow {
-    position: absolute;
+    position: fixed;
     right: 0;
     bottom: 0;
     background-color: white;
@@ -177,7 +187,7 @@ body{
     box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
 }
 #showDrawer {
-    position: absolute;
+    position: fixed;
     bottom: 3.5%;
     right: 2%;
 }
@@ -201,18 +211,42 @@ body{
     color: #795548;
     cursor: pointer;
 }
-#searchFields input{
+input.roboto{
+    font-family:roboto;
+}
+input#searchFields{
     padding: 1% 5%;
+    color: white;
+}
+input#searchFields::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: white;
+    text-transform: capitalize;
+    font-size: 1.2REM;
+}
+input#searchFields::-moz-placeholder { /* Firefox 19+ */
+    color: white;
+    text-transform: capitalize;
+    font-size: 1.2REM;
+}
+input#searchFields:-ms-input-placeholder { /* IE 10+ */
+    color: white;
+    text-transform: capitalize;
+    font-size: 1.2REM;
+}
+input#searchFields:-moz-placeholder { /* Firefox 18- */
+    color: white;
+    text-transform: capitalize;
+    font-size: 1.2REM;
 }
 #drawerRow .fa-plus-square{
     font-size:2.5REM;
     color: silver;
 }
 #drawerRow .fa-times {
-    font-size:2.5REM;
+    font-size:2REM;
     color: white;
     position: relative;
-    right: 55px;
+    right: 25px;
 }
 #drawerRow .searchFieldsControls{
     text-align: center;
@@ -230,7 +264,10 @@ body{
 }
 #drawerRow input#searchFields{
     background-color: silver;
-    border-radius: 50%;
+
+    padding-left: 15px;
+    padding-right: 20px;
+    border-radius: 23px;
 }
 #searchFields-wrap {
     padding: 5px 0px 0px 1%
