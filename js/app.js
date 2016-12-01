@@ -94,8 +94,8 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             $scope.hideFieldSearch = false;
         };
         $scope.searchFieldsMouseLeave = function(){
-            if(!$scope.searchFields)
-            $scope.hideFieldSearch = true;
+            // if(!$scope.searchFields)
+            // $scope.hideFieldSearch = true;
         };
         $scope.showDrawerClose = function(){
             $scope.hideDrawer=true;
@@ -121,6 +121,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             restrict: 'E',
             templateUrl: 'templates/components/navigation.html',
             link: function ($scope, $element, $attrs) {
+                httpService.checkAuthLogOut();
                 $scope.location = $location.$$path;
                 $scope.open = false;
                 $scope.userInfo = {}
@@ -174,31 +175,14 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
         var httpWorker = {};
         httpWorker.getSomething = function(){
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                // console.log('logged in')
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
-                // console.log(httpWorker.reqSpecs.headers)
-
-                httpWorker.getAuth(httpWorker.checkCookie('ARC_UserToken')).then(function(response){
-                    console.log(response)
-                    if(response.data===true){
-                        console.log(response.data)
-
-                    } else {
-                        return response;
-                        console.log('not logged in');
-                        logoutService.logout()
-                    }
-                },function errorCallback(response){
-                    console.log(response)
-                });
-
+                httpWorker.checkAuthLogOut();
                 return $http({
                     method:'GET',
                     url:httpWorker.apiRoot.getPath()+'/Data/Fields',
                     headers:httpWorker.reqSpecs.headers
                 })
             } else {
-                // console.log('not logged in')
                 logoutService.logout()
             }
         };
@@ -208,6 +192,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
         httpWorker.postData = function(path1,data){
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+                httpWorker.checkAuthLogOut();
                 return $http({
                     method:'POST',
                     url:httpWorker.apiRoot.getPath()+path1,
@@ -223,9 +208,8 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             param = param?param:'';
             //path2 = path2?path2:'';
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                // console.log('logged in')
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
-                // console.log(httpWorker.reqSpecs.headers)
+                httpWorker.checkAuthLogOut();
                 return $http({
                     method:'PUT',
                     url:httpWorker.apiRoot.getPath()+path1+param,
@@ -242,15 +226,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             path2 = path2?path2:'';
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
-                httpWorker.getAuth(httpWorker.checkCookie('ARC_UserToken')).then(function(response){
-                    if(response.data!=true){
-                        console.log('not logged in');
-                        logoutService.logout()
-                    }
-
-                },function errorCallback(response){
-                    console.log(response)
-                });
+                httpWorker.checkAuthLogOut();
                 // console.log(httpWorker.reqSpecs.headers)
                 return $http({
                     method:'GET',
@@ -261,6 +237,17 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
                 // console.log('not logged in');
                 logoutService.logout()
             }
+        };
+        httpWorker.checkAuthLogOut = function(){
+            httpWorker.getAuth(httpWorker.checkCookie('ARC_UserToken')).then(function(response){
+                if(response.data!=true){
+                    console.log('not logged in');
+                    logoutService.logout()
+                }
+
+            },function errorCallback(response){
+                console.log(response)
+            });
         };
         httpWorker.getAuth = function(myCookie){
             return $http({

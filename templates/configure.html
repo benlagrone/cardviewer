@@ -204,6 +204,11 @@
     #searchFields input{
         padding: 1% 5%;
     }
+
+    #drawerRow .fa-plus-square,#drawerRow .fa-times {
+        font-size:2.5REM;
+        color:silver;
+    }
 </style>
 <div id="searchHeader" class="row">
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2" style="padding:7px 20px;">
@@ -422,21 +427,21 @@
 <div id="drawerRow" ng-hide="hideDrawer" class="row animate-hide {{hideDrawer!=false?'':'active'}}">
     <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
         <div class="row">
-            <div class="col-md-9 col-sm-9 col-xs-9 col-lg-9" ng-hide="!hideFieldSearch">
+            <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-hide="!hideFieldSearch">
                 <h5>Available Fields</h5>
             </div>
-            <div class="col-md-3 col-sm-3 col-xs-3 col-lg-3" ng-hide="!hideFieldSearch">
+            <div class="col-md-4 col-sm-4 col-xs-4 col-lg-4" ng-hide="!hideFieldSearch">
                 <span class="fa-stack fa-lg" ng-click="showFieldSearch()">
                   <i class="fa fa-circle fa-stack-2x" style="color:silver;"></i>
                   <i class="fa fa-search fa-stack-1x fa-inverse"></i>
                 </span>
-                <i class="fa fa-plus-square" aria-hidden="true"></i>
+                <span><i class="fa fa-plus-square" aria-hidden="true"></i></span>
             </div>
             <div id="searchFields"
                  ng-hide="hideFieldSearch"
                  ng-mouseleave="searchFieldsMouseLeave()"
                  class="row">
-                <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
+                <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8">
                     <input
                             ng-model="searchFields"
                             uib-typeahead="items.name for items in fields | filter:$viewValue | limitTo:8"
@@ -449,6 +454,23 @@
                             type="text"
                             tabindex="0">
                 </div>
+                <div class="col-md-4 col-sm-4 col-xs-4 col-lg-4">
+                    <i class="fa fa-times"
+                       ng-hide=""
+                       ng-mouseleave=""
+                       ng-mouseover=""
+                       ng-click=""
+                       aria-hidden="true"
+                       style="">
+                    </i>
+                    <span><i class="fa fa-plus-square"
+                             ng-hide=""
+                             ng-mouseleave=""
+                             ng-mouseover=""
+                             ng-click=""
+                             aria-hidden="true"
+                             aria-hidden="true"></i></span>
+                    </div>
             </div>
         </div>
         <div class="fields" class="row">
