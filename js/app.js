@@ -97,6 +97,11 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster', 'ngAnimate','ui.bootst
             // if(!$scope.searchFields)
             // $scope.hideFieldSearch = true;
         };
+        $scope.closeFieldsSearch = function(){
+            // if(!$scope.searchFields)
+            $scope.hideFieldSearch = true;
+            $scope.searchFields = undefined;
+        };
         $scope.showDrawerClose = function(){
             $scope.hideDrawer=true;
             $scope.searchFields = undefined;

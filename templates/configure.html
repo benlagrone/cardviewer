@@ -1,214 +1,6 @@
 <style>
-    #searchHeader {
-        background: #009688;
-        color: white;
-        border-width: 1px;
-        cursor: pointer;
-        font-size: 1.5em;
-        margin: 20px auto 1px auto;
-        width: 80%;
-        transition: background .15s;
-    }
 
-    #searchFilter > div > input {
-        margin: 10px 0;
-        background: rgba(255, 255, 255, .15);
-        padding: 2px 0px 0px 10px;
-        border-bottom: none;
-    }
 
-    #searchFilter > div > input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-        color: white;
-        text-transform: capitalize;
-        font-size: 1.2REM;
-    }
-
-    #searchFilter > div > input::-moz-placeholder { /* Firefox 19+ */
-        color: white;
-        text-transform: capitalize;
-        font-size: 1.2REM;
-    }
-
-    #searchFilter > div > input:-ms-input-placeholder { /* IE 10+ */
-        color: white;
-        text-transform: capitalize;
-        font-size: 1.2REM;
-    }
-
-    #searchFilter > div > input:-moz-placeholder { /* Firefox 18- */
-        color: white;
-        text-transform: capitalize;
-        font-size: 1.2REM;
-    }
-
-    .form-control {
-        font-family: "FontAwesome"
-    }
-
-    .fields > div, #newFieldRow > .fields {
-        outline: 2px solid transparent;
-        background: white;
-        bottom: 0;
-        box-shadow: rgb(224, 224, 224) 0px -1px 0px 0px, rgba(0, 0, 0, 0.117647) 0px 0px 2px 0px, rgba(0, 0, 0, 0.239216) 0px 2px 4px 0px;
-        /*box-shadow: 0 5px 15px rgba(0,0,0,.5);*/
-    }
-
-    .fields > div.active, #newFieldRow > .fields.active, #newFieldRow.active .fields {
-        box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
-    }
-
-    #newFieldRow > .fields > div {
-        outline: none;
-        box-shadow: none;
-    }
-
-    .fields > div > h6 {
-        width: 104%;
-        margin: 10px 0 10px -2%;
-        padding: 0 0 3px 1%;
-    }
-
-    .fields > div ul.controls {
-        float: right;
-        margin-bottom: 0px;
-    }
-
-    .fields > div ul.controls li {
-        float: right;
-        display: inline;
-        color: #999;
-        padding: 3px;
-    }
-
-    .fields > div ul.data-rows {
-        border-top: 1px solid #d8d8d8;
-        padding-top: 1REM;
-    }
-
-    .data-rows li {
-        line-height: 2REM;
-    }
-
-    .fields > div ul.data-rows .label {
-        color: #666;
-        font-size: .9REM;
-        width: 25%;
-        display: inline-block;
-        text-align: left;
-    }
-
-    .fields > div ul.data-rows .field {
-        width: 74%;
-        float: right;
-    }
-
-    .fields > div ul.data-rows .field input {
-        width: 100%
-    }
-
-    .fields > div.active {
-        margin: 20px -2%;
-        width: 105%;
-    }
-
-    #searchFilter input {
-        color: white;
-    }
-
-    .fieldControls {
-        padding-top: 6px;
-    }
-
-    #fieldsData .active .fieldControls h6 {
-        margin-top: 0.5REM;
-    }
-
-    #fieldsData .fieldControls h6 {
-        margin-top: 0px;
-    }
-
-    .animate-hide {
-        transition: all linear 0.5s;
-        line-height: 20px;
-        opacity: 1;
-    }
-
-    .animate-hide.ng-hide {
-        line-height: 0;
-        line-height: 0px;
-        opacity: 0;
-    }
-
-    #addRow {
-        font-size: 4REM;
-        color: #673AB7;
-        cursor: pointer;
-        position: absolute;
-        bottom: 2%;
-        left: 2%;
-    }
-
-    #newFieldRow {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-
-    }
-
-    #newFieldRow.animate-hide.ng-hide {
-        height: 0;
-    }
-
-    #drawerRow {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        background-color: white;
-        width: 30%;
-        display: block;
-        height: 94%;
-        overflow-y: scroll;
-        overflow-x: hidden;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
-    }
-
-    #showDrawer {
-        position: absolute;
-        bottom: 3.5%;
-        right: 2%;
-    }
-
-    #showDrawer span {
-        font-size: 2REM;
-        color: #795548;
-        cursor: pointer;
-        position: relative;
-        left: 2px;
-    }
-
-    #showDrawer i.fa-times-circle {
-        font-size: 4REM;
-        color: #795548;
-        cursor: pointer;
-    }
-
-    #showDrawer .fa-arrow-left {
-        color: white;
-    }
-
-    #showDrawer i.fa-arrow-circle-right {
-        font-size: 4REM;
-        color: #795548;
-        cursor: pointer;
-    }
-    #searchFields input{
-        padding: 1% 5%;
-    }
-
-    #drawerRow .fa-plus-square,#drawerRow .fa-times {
-        font-size:2.5REM;
-        color:silver;
-    }
 </style>
 <div id="searchHeader" class="row">
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2" style="padding:7px 20px;">
@@ -428,22 +220,18 @@
     <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
         <div class="row">
             <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-hide="!hideFieldSearch">
-                <h5>Available Fields</h5>
+                <h5 ng-click="showFieldSearch()">Available Fields</h5>
             </div>
-            <div class="col-md-4 col-sm-4 col-xs-4 col-lg-4" ng-hide="!hideFieldSearch">
+            <div id="searchFieldsControls1" class="searchFieldsControls col-md-4 col-sm-4 col-xs-4 col-lg-4" ng-hide="!hideFieldSearch">
                 <span class="fa-stack fa-lg" ng-click="showFieldSearch()">
                   <i class="fa fa-circle fa-stack-2x" style="color:silver;"></i>
                   <i class="fa fa-search fa-stack-1x fa-inverse"></i>
                 </span>
                 <span><i class="fa fa-plus-square" aria-hidden="true"></i></span>
             </div>
-            <div id="searchFields"
-                 ng-hide="hideFieldSearch"
-                 ng-mouseleave="searchFieldsMouseLeave()"
-                 class="row">
-                <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8">
-                    <input
-                            ng-model="searchFields"
+
+                <div id="searchFields-wrap" ng-hide="hideFieldSearch" class="col-md-8 col-sm-8 col-xs-8 col-lg-8">
+                    <input ng-model="searchFields"
                             uib-typeahead="items.name for items in fields | filter:$viewValue | limitTo:8"
                             class="form-control"
                             aria-label="Search"
@@ -452,14 +240,17 @@
                             aria-haspopup="true"
                             spellcheck="false"
                             type="text"
-                            tabindex="0">
+                            tabindex="0"
+                    id="searcFields">
                 </div>
-                <div class="col-md-4 col-sm-4 col-xs-4 col-lg-4">
+                <div  ng-hide="hideFieldSearch"
+                        id="searchFieldsControls2"
+                        class="searchFieldsControls col-md-4 col-sm-4 col-xs-4 col-lg-4">
                     <i class="fa fa-times"
                        ng-hide=""
                        ng-mouseleave=""
                        ng-mouseover=""
-                       ng-click=""
+                       ng-click="closeFieldsSearch()"
                        aria-hidden="true"
                        style="">
                     </i>
@@ -471,11 +262,11 @@
                              aria-hidden="true"
                              aria-hidden="true"></i></span>
                     </div>
-            </div>
+
         </div>
         <div class="fields" class="row">
             <div
-                    ng-repeat="items in fields | filter:selected"
+                    ng-repeat="items in fields | filter:searchFields"
                     class="col-md-12 col-sm-12 col-xs-12 col-lg-12 animate-hide {{items.hide?'':'active'}}"
             >
                 <div class="row fieldControls">
