@@ -24,13 +24,14 @@
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
 </div>
 
-<div id="fieldsData" class="row">
+<div id="activitiesData" class="row">
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
     <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8">
         <div class="fields" class="row">
             <div
                     ng-repeat="items in activities | filter:selected"
                     class="col-md-12 col-sm-12 col-xs-12 col-lg-12 animate-hide {{items.hide?'':'active'}}"
+                    ng-hide="items.hideRow"
             >
                 <div ng-hide="!items.edit" class="row alert alert-warning">
                     <div class="col-md-9 col-sm-9 col-xs-9 col-lg-9">
@@ -50,12 +51,15 @@
                         <ul class="controls" ng-hide="items.hide">
                             <li ng-hide="items.hide">
                                 <i title="Edit this activity"
-                                   ng-click="items.edit=!items.edit" class="fa fa-pencil-square fa-2x"
+                                   ng-if="!items.isMasterActivity"
+                                   ng-click="items.edit=!items.edit"
+                                   class="fa fa-pencil-square fa-2x"
                                    aria-hidden="true"></i>
-                            </li>
-                            <li ng-hide="items.hide">
-                                <i title="Delete this Activity"
-                                   class="fa fa-minus-square fa-2x" style="color:#D50000;" aria-hidden="true"></i>
+                                <i title="This is a Master Activity and can not be edited"
+                                   ng-if="items.isMasterActivity"
+                                   ng-click=""
+                                   class="fa fa-lock fa-2x"
+                                   aria-hidden="true"></i>
                             </li>
                             <li ng-hide="items.hide">
                                 <i title="Roll back changes to this Activity, this only works if this has not been submitted"
@@ -67,7 +71,7 @@
                             </li>
                             <li ng-hide="items.hide">
                                 <i title="Submit your changes"
-                                   ng-click="submitChanges(items)"
+                                   ng-click="submitActivityChanges(items)"
                                    ng-hide="!items.edit"
                                    class="fa fa-paper-plane fa-2x"
                                    aria-hidden="true" style="color:#4CAF50;"></i>
@@ -80,51 +84,36 @@
                     <li><span class="label">name</span>
                         <span ng-hide="items.edit" class="field">{{items.name}}</span>
                         <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.name"/>
+                        <input title="Activity Name is locked" disabled ng-model="items.name"/>
                         </span>
                     </li>
                     <li>
                         <span class="label">category</span>
                         <span ng-hide="items.edit" class="field">{{items.category}}</span>
                         <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.category"/>
-                       </span>
-                    </li>
-                    <li>
-                        <span class="label">createdById</span>
-                        <span ng-hide="items.edit" class="field">{{items.createdById}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.createdById"/>
-                       </span>
-                    </li>
-                    <li><span class="label">createdDate</span>
-                        <span ng-hide="items.edit" class="field">{{items.createdDate}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.createdDate"/>
-                       </span>
-                    </li>
-                    <li><span class="label">departmentId</span>
-                        <span ng-hide="items.edit" class="field">{{items.departmentId}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.departmentId"/>
+                        <input title="Activity Category is locked" disabled ng-model="items.category"/>
                        </span>
                     </li>
                     <li><span class="label">description</span>
-                        <span ng-hide="items.edit" class="field">{{items.description}}</span>
+                        <span class="field">{{items.description}}</span>
                         <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.description"/>
+                        <input hidden disabled ng-model="items.description"/>
                        </span>
                     </li>
+                    </ul>
+                <ul style="clear:both;" class="animate-hide data-rows" ng-hide="items.hide">
                     <li>
                         <span class="label">fields</span>
                         <span>
                             <a ng-click="addAFieldToActivity(items)"
                                title="Open the Available Fields Drawer"
+                               ng-if="!items.isMasterActivity"
                                ng-hide="!hideDrawer">
-                                Edit Fields
+                                Edit {{items.name}} Fields
                                 <i class="fa fa-plus-circle"
                                    aria-hidden="true"></i>
                                 </a>
+
                                 <a title="Close the Available Fields Drawer"
                                     ng-click="showDrawerClose();clearWorkingActivity()"
                                     ng-hide="hideDrawer">
@@ -135,57 +124,14 @@
                                    aria-hidden="true"
                                    style=""></i>
                             </a>
-
                         </span>
                         <ul>
-                            <li ng-repeat="field in items.fields" style="float:left">
-                            <span><a ng-click="showFieldInDrawer(field.name)">{{field.name}}</a>,&nbsp;</span>
-                                <ul ng-hide="true">
-                                    <li>{{field.name}}</li>
-                                    <li>{{field.categoryId}}</li>
-                                    <li>{{field.canBeAutomated}}</li>
-                                    <li>{{field.categoryName}}</li>
-                                    <li>{{field.createdById}}</li>
-                                    <li>{{field.createdDate}}</li>
-                                    <li>{{field.displayName}}</li>
-                                    <li>{{field.fieldDataType}}</li>
-                                    <li>{{field.fieldParentId}}</li>
-                                    <li>{{field.id}}</li>
-                                    <li>{{field.instructions}}</li>
-                                    <li>{{field.isMasterField}}</li>
-                                    <li>{{field.listId}}</li>
-                                    <li>{{field.modifiedById}}</li>
-                                    <li>{{field.modifiedDate}}</li>
-                                </ul>
+                            <li class="activityFields" ng-repeat="field in items.fields" style="float:left" ng-class="{'last':$last}">
+                            <span>&nbsp;<a ng-click="showFieldInDrawer(field.name)">{{field.name}}</a></span>
                             </li>
                         </ul>
                     </li>
-                    <li><span class="label">id</span>
-                        <span ng-hide="items.edit" class="field">{{items.id}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.id"/>
-                       </span>
-                    </li>
-                    <li><span class="label">isMasterActivity</span>
-                        <span ng-hide="items.edit" class="field">{{items.isMasterActivity}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.isMasterActivity"/>
-                       </span>
-                    </li>
-                    <li><span class="label">modifiedById</span>
-                        <span ng-hide="items.edit" class="field">{{items.modifiedById}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.modifiedById"/>
-                       </span>
-                    </li>
-                    <li><span class="label">modifiedDate</span>
-                        <span ng-hide="items.edit" class="field">{{items.modifiedDate}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.modifiedDate"/>
-                        </span>
-                    </li>
                 </ul>
-
             </div>
         </div>
     </div>
@@ -219,50 +165,98 @@
                 </div>
                 <ul class="animate-hide data-rows">
                     <li>
-                        <span class="label">instructions</span>
+                        <span class="label">name</span>
                         <span class="field">
-                        <input ng-model="newField.instructions"/>
+                        <input ng-model="newData.activity.name"/>
+
+                        <input type="hidden" value="new field" ng-model="newData.activity.id"/>
                        </span>
                     </li>
                     <li>
-                        <span class="label">displayName</span>
+                        <span class="label">category</span>
                         <span class="field">
-                        <input ng-model="newField.displayName"/>
+                        <input ng-model="newData.activity.category"/>
                        </span>
                     </li>
-                    <li><span class="label">canBeAutomated</span>
+                    <li><span class="label">description</span>
                         <span class="field">
-                        <input ng-model="newField.canBeAutomated"/>
+                        <input ng-model="newData.activity.description"/>
                        </span>
                     </li>
-                    <li><span class="label">categoryId</span>
+
+                    <li>
+                        <span class="label">fields</span>
+                        <span>
+                            <a ng-click="addAFieldToActivity(newData.activity)"
+                               title="Open the Available Fields Drawer"
+                               ng-hide="!hideDrawer">
+                                Add Fields
+                                <i class="fa fa-plus-circle"
+                                   aria-hidden="true"></i>
+                                </a>
+                                <a title="Close the Available Fields Drawer"
+                                   ng-click="showDrawerClose();clearWorkingActivity()"
+                                   ng-hide="hideDrawer">
+                                    Done Editing
+                                <i class="fa fa-arrow-circle-right"
+                                   ng-mouseleave=""
+                                   ng-mouseover=""
+                                   aria-hidden="true"
+                                   style=""></i>
+                            </a>
+
+                        </span>
+                        <ul>
+                            <li ng-repeat="field in newData.activity.fields" style="float:left">
+                                <span><a ng-click="showFieldInDrawer(field.name)">{{field.name}}</a>,&nbsp;</span>
+                                <ul ng-hide="true">
+                                    <li>{{field.name}}</li>
+                                    <li>{{field.categoryId}}</li>
+                                    <li>{{field.canBeAutomated}}</li>
+                                    <li>{{field.categoryName}}</li>
+                                    <li>{{field.createdById}}</li>
+                                    <li>{{field.createdDate}}</li>
+                                    <li>{{field.displayName}}</li>
+                                    <li>{{field.fieldDataType}}</li>
+                                    <li>{{field.fieldParentId}}</li>
+                                    <li>{{field.id}}</li>
+                                    <li>{{field.instructions}}</li>
+                                    <li>{{field.isMasterField}}</li>
+                                    <li>{{field.listId}}</li>
+                                    <li>{{field.modifiedById}}</li>
+                                    <li>{{field.modifiedDate}}</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><span class="label">isMasterActivity</span>
                         <span class="field">
-                        <input ng-model="newField.categoryId"/>
+                        <input ng-model="newData.activity.isMasterActivity"/>
                        </span>
                     </li>
-                    <li><span class="label">categoryName</span>
+                    <li><span class="label">departmentId</span>
                         <span class="field">
-                        <input ng-model="newField.categoryName"/>
+                        <input ng-model="newData.activity.departmentId"/>
                        </span>
                     </li>
                     <li><span class="label">createdById</span>
                         <span class="field">
-                        <input ng-model="newField.createdById"/>
+                        <input ng-model="newData.activity.createdById"/>
                        </span>
                     </li>
                     <li><span class="label">createdDate</span>
                         <span class="field">
-                        <input ng-model="newField.createdDate"/>
+                        <input ng-model="newData.activity.createdDate"/>
                        </span>
                     </li>
                     <li><span class="label">modifiedById</span>
                         <span class="field">
-                        <input ng-model="newField.modifiedById"/>
+                        <input ng-model="newData.activity.modifiedById"/>
                        </span>
                     </li>
                     <li><span class="label">modifiedDate</span>
                         <span class="field">
-                        <input ng-model="newField.modifiedDate"/>
+                        <input ng-model="newData.activity.modifiedDate"/>
                         </span>
                     </li>
                 </ul>
@@ -280,7 +274,7 @@
                 class="fa {{addSymbol}}"
                 ng-mouseleave="addMouseLeave()"
                 ng-mouseover="addMouseOver()"
-                ng-click="hideNew=!hideNew"
+                ng-click="hideNew=!hideNew;addNewActivity()"
                 aria-hidden="true">
         </i>
     </div>
@@ -397,47 +391,57 @@
                         <input ng-model="items.displayName"/>
                        </span>
                     </li>
-                    <li><span class="label">canBeAutomated</span>
-                        <span ng-hide="items.edit" class="field">{{items.canBeAutomated}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.canBeAutomated"/>
-                       </span>
-                    </li>
-                    <li><span class="label">categoryId</span>
-                        <span ng-hide="items.edit" class="field">{{items.categoryId}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.categoryId"/>
-                       </span>
-                    </li>
+                    <!--<li><span class="label">canBeAutomated</span>-->
+                        <!--<span ng-hide="items.edit" class="field">{{items.canBeAutomated}}</span>-->
+                        <!--<span ng-hide="!items.edit" class="field">-->
+                        <!--<input ng-model="items.canBeAutomated"/>-->
+                       <!--</span>-->
+                    <!--</li>-->
+                    <!--<li><span class="label">categoryId</span>-->
+                        <!--<span ng-hide="items.edit" class="field">{{items.categoryId}}</span>-->
+                        <!--<span ng-hide="!items.edit" class="field">-->
+                        <!--<input ng-model="items.categoryId"/>-->
+                       <!--</span>-->
+                    <!--</li>-->
                     <li><span class="label">categoryName</span>
                         <span ng-hide="items.edit" class="field">{{items.categoryName}}</span>
                         <span ng-hide="!items.edit" class="field">
                         <input ng-model="items.categoryName"/>
                        </span>
                     </li>
-                    <li><span class="label">createdById</span>
-                        <span ng-hide="items.edit" class="field">{{items.createdById}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.createdById"/>
-                       </span>
-                    </li>
-                    <li><span class="label">createdDate</span>
-                        <span ng-hide="items.edit" class="field">{{items.createdDate}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.createdDate"/>
-                       </span>
-                    </li>
-                    <li><span class="label">modifiedById</span>
-                        <span ng-hide="items.edit" class="field">{{items.modifiedById}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.modifiedById"/>
-                       </span>
-                    </li>
-                    <li><span class="label">modifiedDate</span>
-                        <span ng-hide="items.edit" class="field">{{items.modifiedDate}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.modifiedDate"/>
-                        </span>
+                    <!--<li><span class="label">createdById</span>-->
+                        <!--<span ng-hide="items.edit" class="field">{{items.createdById}}</span>-->
+                        <!--<span ng-hide="!items.edit" class="field">-->
+                        <!--<input ng-model="items.createdById"/>-->
+                       <!--</span>-->
+                    <!--</li>-->
+                    <!--<li><span class="label">createdDate</span>-->
+                        <!--<span ng-hide="items.edit" class="field">{{items.createdDate}}</span>-->
+                        <!--<span ng-hide="!items.edit" class="field">-->
+                        <!--<input ng-model="items.createdDate"/>-->
+                       <!--</span>-->
+                    <!--</li>-->
+                    <!--<li><span class="label">modifiedById</span>-->
+                        <!--<span ng-hide="items.edit" class="field">{{items.modifiedById}}</span>-->
+                        <!--<span ng-hide="!items.edit" class="field">-->
+                        <!--<input ng-model="items.modifiedById"/>-->
+                       <!--</span>-->
+                    <!--</li>-->
+                    <!--<li><span class="label">modifiedDate</span>-->
+                        <!--<span ng-hide="items.edit" class="field">{{items.modifiedDate}}</span>-->
+                        <!--<span ng-hide="!items.edit" class="field">-->
+                        <!--<input ng-model="items.modifiedDate"/>-->
+                        <!--</span>-->
+                    <!--</li>-->
+                    <li>
+                        <ul>
+                            <li class="childFields"
+                                ng-repeat="childField in items.childFields"
+                                ng-class="{'last':$last}"
+                            style="float:left">
+                                <span>&nbsp;<a>{{childField.name}}</a></span>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
 

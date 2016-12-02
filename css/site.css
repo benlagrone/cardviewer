@@ -112,6 +112,12 @@ body{
 .data-rows li {
     line-height: 2REM;
 }
+.childFields::after,.data-rows li.activityFields::after{
+    content:",";
+}
+.childFields.last::after.data-rows li.activityFields.last::after{
+    content:"";
+}
 .fields > div ul.data-rows .label {
     color: #666;
     font-size: .9REM;
@@ -141,10 +147,10 @@ body{
 .fieldControls {
     padding-top: 6px;
 }
-#fieldsData .active .fieldControls h6 {
+#activitiesData .active .fieldControls h6 {
     margin-top: 0.5REM;
 }
-#fieldsData .fieldControls h6 {
+#activitiesData .fieldControls h6 {
     margin-top: 0px;
 }
 .animate-hide {
@@ -190,6 +196,9 @@ body{
     position: fixed;
     bottom: 3.5%;
     right: 2%;
+}
+.data-rows .label{
+    text-transform: capitalize;
 }
 #showDrawer span {
     font-size: 2REM;
