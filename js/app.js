@@ -30,8 +30,17 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         function getItem(key) {
             return localStorageService.get(key);
         }
-        $scope.userId = getItem('userId')
-        $scope.userName = getItem('userName')
+        $scope.enableFeature = {
+            addActivity : true,
+            addField : true
+        };
+        $scope.makeTime = {
+            time:moment().format('L')
+        };
+        $scope.userId = getItem('userId');
+        $scope.userName = getItem('userName');
+        $scope.departmentNiceName = getItem('departmentNiceName');
+        $scope.departmentId = getItem('departmentId');
         $scope.fields = [];
         $scope.activities = [];
         $scope.restore = {
@@ -50,8 +59,10 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 fields:[]
             }
         };
+        $scope.dataTypesList = [];
         $scope.addSymbol = 'fa-plus-square';
-        $scope.hideNew = true;
+        $scope.hideNewActivity = true;
+        $scope.hideNewField = true;
         $scope.hideDrawer = true;
         $scope.drawerSymbol ='fa-list';
         $scope.closeDrawerSymbol = 'fa-times-circle';
@@ -67,9 +78,15 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         };
         $scope.addClick = function(){
         };
-        $scope.clearNew = function(){
+        $scope.clearNewActivity = function(){
+            $scope.newActivity = {};
+            $scope.hideNewActivity = true;
+            $scope.workingActivity=undefined;
+        };
+        $scope.clearNewField = function(){
             $scope.newField = {};
-            $scope.hideNew = true;
+            $scope.hideNewField = true;
+            $scope.workingField=undefined;
         };
         httpService.getUser().then(function(response){
             $scope.userInfo = response.data;
@@ -81,32 +98,17 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 value.edit = false;
                 value.hideRow = false;
                 value.openCloseDrawerControls = false;
-                value.openDrawerLocal = function(items,obj){
-                    console.log(obj.target.attributes.data.value)
-                    console.log(items)
-                    console.log(obj)
-                    if(obj.target.attributes.data.value==='edit'){
-                        items.openCloseDrawerControls = true;
-                    }
-                    if(obj.target.attributes.data.value==='done'){
-                        console.log('***DONE')
-                        items.openCloseDrawerControls = false;
-                    }
-                    angular.forEach($scope.activities,function(value,index){
-                        if(value.id!=$scope.activities[index].id){
-                            $scope.activities[index].openCloseDrawerControls = false
-                        } else {
-                            $scope.activities[index].openCloseDrawerControls = true
-                        }
-                    })
-                }
                     var valTmp = value;
                 $scope.activities.push(value);
                 $scope.restore.activities.push(valTmp);
             })
-
         },function errorCallBack(response){
             // console.log(response)
+        });
+        httpService.getData('Data/Field/DataTypes').then(function(response){
+            $scope.dataTypesList = response.data;
+        },function errorCallback(response){
+
         });
         httpService.getData('Data/Fields').then(function(response){
             angular.forEach(response.data,function(value,key){
@@ -118,6 +120,15 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             })
         },function errorCallBack(response){
         });
+        $scope.getFieldDataType = function(fileTypeID){
+            var usedID;
+            angular.forEach($scope.dataTypesList,function(value,index){
+              if (value.id===fileTypeID){
+                  usedID = value.name
+              }
+          });
+            return usedID;
+        };
         $scope.postNewActivity = function(){
             console.log($scope.newData.activity);
             var postData = {
@@ -141,7 +152,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         };
         $scope.submitActivityChanges = function(activity){
             console.log(activity);
-            var postData = {
+            var putData = {
                 "fields":[],
                 "id": activity.id,
                 "name": activity.name,
@@ -175,8 +186,30 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                }
                postData.fields.push(fieldData);
             });
-            console.log(postData)
+            console.log(putData)
             //ready to PUT postData
+        };
+        $scope.submitFieldChanges = function(field){
+            console.log(field);
+            var putData = {
+                "id": field.id,
+                "name": field.name,
+                "instructions": field.instructions,
+                "fieldDataType": field.fieldDataType,
+                "listId": field.listId,
+                "fieldParentId": field.fieldParentId,
+                "isMasterField": field.isMasterField,
+                "canBeAutomated": field.canBeAutomated,
+                "categoryId": field.categoryId,
+                "categoryName": field.categoryName,
+                "createdById": field.createdById,
+                "createdDate": field.createdDate,
+                "modifiedById": $scope.userId,
+                "modifiedDate": moment().format('L'),
+                "childFields": field.childFields
+            }
+            console.log(putData)
+            //ready to put postdatas
         };
         $scope.drawerMouseLeave = function(){
             $scope.drawerSymbol = 'fa-list'
@@ -231,6 +264,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             angular.forEach($scope.activities,function(value,index){
                 if(value.id===$scope.workingActivity.id){
                     if(obj.target.attributes.data.value==="add"){
+                        field.fieldName = field.name;
                         value.fields.push(field);
                         value.edit=true;
                     }
@@ -247,27 +281,67 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 }
             })
         };
+        $scope.toggleFieldsLabel = function(obj,activity){
+            angular.forEach($scope.activities,function(value,index){
+                if(value.id!=activity.id){
+                    $scope.activities[index].openCloseDrawerControls = false;
+                } else if (value.id===activity.id){
+                    console.log(obj.target.attributes.data.value)
+                    if(obj.target.attributes.data.value==='open'){
+                        activity.openCloseDrawerControls = true;
+                    }
+                    if(obj.target.attributes.data.value==='close'){
+                        activity.openCloseDrawerControls = false;
+                    }
+                }
+            })
+        };
         $scope.addNewActivity = function(){
+            $scope.hideNewActivity=!$scope.hideNewActivity;
+            console.log($scope.hideNewActivity);
             $scope.activities.push($scope.newData.activity)
         };
-        $scope.clearWorkingActivity = function(){
-            $scope.workingActivity = undefined;
+        $scope.clearWorkingActivity = function(activity){
+
+            if(!activity){
+                $scope.workingActivity = activity;
+                angular.forEach($scope.activities,function(value,index){
+                    value.openCloseDrawerControls = false;
+                })
+            } else if(activity){
+                if (activity.isMasterActivity!=true){
+                }
+            }
+            var allClosed = true;
+            angular.forEach($scope.activities,function(value,index){
+                if(value.hide===false){
+                    allClosed = false;
+                }
+            });
+            if(allClosed===true){
+                angular.forEach($scope.activities,function(value,index){
+                   if($scope.workingActivity===value.id){
+                       value.openCloseDrawerControls=false;
+                   }
+                });
+                $scope.workingActivity=undefined;
+            };
         };
-        $scope.undoChanges = function(item){
-            console.log('revert changes')
-            // console.log(item.id)
+        $scope.undoChanges = function(activity){
             angular.forEach($scope.restore.activities,function(value,key){
-                if(value.id===item.id){
-                    // item = value;
-                    // $scope.activities[key].fields = [];
-                    // console.log($scope.activities[key].id)
-                    // console.log(item)
-                    // console.log(value)
-                    // console.log($scope.activities[key])
-                    // console.log($scope.restore.activities[key])
-                    httpService.getData('Data/Activity/',item.id).then(function(response){
-                        item = response.data;
-                        console.log(response)
+                if(value.id===activity.id){
+                    httpService.getData('Data/Activity/',activity.id).then(function(response){
+                        activity.fields = response.data.fields;
+                        $scope.workingActivity.fields = response.data.fields;
+                        angular.forEach($scope.fields,function(value,index){
+                            value.showIncluded = false;
+                            console.log(response.data);
+                            angular.forEach(response.data.fields,function(Fvalue,Findex){
+                                if(Fvalue.id===value.id){
+                                    value.showIncluded = true;
+                                }
+                            });
+                        });
                     },function errorCallback(response){
                         console.log(response)
                     })
@@ -319,12 +393,13 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     trackPageAccess.postData();
                     httpService.getUser().then(function(response){
                         $scope.userInfo = response.data;
-                        console.log($scope.userInfo)
                         function submit(key, val) {
                             return localStorageService.set(key, val);
                         }
-                        submit('userName',$scope.userInfo.fullName)
-                        submit('userId',$scope.userInfo.id)
+                        submit('userName',$scope.userInfo.fullName);
+                        submit('userId',$scope.userInfo.id);
+                        submit('departmentId',$scope.userInfo.departmentId);
+                        submit('departmentNiceName',$scope.userInfo.departmentNiceName);
                     },function errorCallback(response){
                         // console.log(response)
                     });
@@ -429,7 +504,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         httpWorker.getAuth = function(myCookie){
             return $http({
                     method:'GET',
-                    url:httpWorker.apiRoot.getPath()+'/Authorize/' + myCookie,
+                    url:httpWorker.apiRoot.getPath()+'Authorize/' + myCookie,
                     headers:httpWorker.reqSpecs.headers
                 }
             )

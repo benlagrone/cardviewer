@@ -42,10 +42,10 @@
                 </div>
                 <div class="row fieldControls">
                     <div ng-hide="!hideDrawer" class="col-md-9 col-sm-9 col-xs-9 col-lg-9">
-                        <h6 ng-click="items.hide=!items.hide;clearWorkingActivity()">{{items.name}}</h6>
+                        <h6 ng-click="items.hide=!items.hide;clearWorkingActivity(items)">{{items.name}}</h6>
                     </div>
                     <div ng-hide="hideDrawer" class="col-md-7 col-sm-7 col-xs-7 col-lg-7">
-                        <h6 ng-click="items.hide=!items.hide;clearWorkingActivity()">{{items.name}}</h6>
+                        <h6 ng-click="items.hide=!items.hide;clearWorkingActivity(items)">{{items.name}}</h6>
                     </div>
                     <div class="col-md-3 col-sm-3 col-xs-3 col-lg-3">
                         <ul class="controls" ng-hide="items.hide">
@@ -81,20 +81,22 @@
                 </div>
 
                 <ul class="animate-hide data-rows" ng-hide="items.hide">
-                    <li><span class="label">name</span>
+                    <li  ng-if="items.name">
+                        <span class="label">name</span>
                         <span ng-hide="items.edit" class="field">{{items.name}}</span>
                         <span ng-hide="!items.edit" class="field">
                         <input title="Activity Name is locked" disabled ng-model="items.name"/>
                         </span>
                     </li>
-                    <li>
+                    <li ng-if="items.category">
                         <span class="label">category</span>
                         <span ng-hide="items.edit" class="field">{{items.category}}</span>
                         <span ng-hide="!items.edit" class="field">
                         <input title="Activity Category is locked" disabled ng-model="items.category"/>
                        </span>
                     </li>
-                    <li><span class="label">description</span>
+                    <li ng-if="items.description">
+                        <span class="label">description</span>
                         <span class="field">{{items.description}}</span>
                         <span ng-hide="!items.edit" class="field">
                         <input hidden disabled ng-model="items.description"/>
@@ -105,18 +107,20 @@
                     <li>
                         <span class="label">fields</span>
                         <span>
-                            <a ng-click="addAFieldToActivity(items)"
+                            <a ng-click="addAFieldToActivity(items);toggleFieldsLabel($event,items);"
+                               data="open"
                                title="Open the Available Fields Drawer"
                                ng-if="!items.isMasterActivity"
-                               ng-hide="!hideDrawer">
+                               ng-hide="items.openCloseDrawerControls">
                                 Edit {{items.name}} Fields
                                 <i class="fa fa-plus-circle"
                                    aria-hidden="true"></i>
                                 </a>
 
                                 <a title="Close the Available Fields Drawer"
-                                    ng-click="showDrawerClose();clearWorkingActivity()"
-                                    ng-hide="hideDrawer">
+                                    ng-click="showDrawerClose();clearWorkingActivity();toggleFieldsLabel($event,items);"
+                                   data="close"
+                                    ng-hide="!items.openCloseDrawerControls">
                                     Done Editing
                                 <i class="fa fa-arrow-circle-right"
                                    ng-mouseleave=""
@@ -127,7 +131,7 @@
                         </span>
                         <ul>
                             <li class="activityFields" ng-repeat="field in items.fields" style="float:left" ng-class="{'last':$last}">
-                            <span>&nbsp;<a ng-click="showFieldInDrawer(field.name)">{{field.name}}</a></span>
+                            <span>&nbsp;<a ng-click="showFieldInDrawer(field.fieldName)">{{field.fieldName}}</a></span>
                             </li>
                         </ul>
                     </li>
@@ -138,12 +142,13 @@
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
 </div>
 
-<div id="newFieldRow" ng-hide="hideNew" class="row animate-hide {{hideNew!=false?'':'active'}}">
+<div id="newActivityRow"
+        ng-hide="hideNewActivity"
+        class="row animate-hide {{hideNewActivity!=false?'':'active'}}">
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
     <div class="fields col-md-5 col-sm-5 col-xs-5 col-lg-5">
         <div>
-
-            <div id="newField">
+            <div id="newActivity">
                 <div class="row fieldControls">
                     <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7">
                         <h6>New Activity</h6>
@@ -151,11 +156,316 @@
                     <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
                         <ul class="controls">
                             <li>
-                                <i ng-click="clearNew()" class="fa fa-trash fa-2x" style="color:#D50000;"
+                                <i ng-click="clearNewActivity()" class="fa fa-trash fa-2x" style="color:#D50000;"
                                    aria-hidden="true"></i>
                             </li>
                             <li>
                                 <i ng-click="postNew()"
+                                   class="fa fa-paper-plane fa-2x"
+                                   aria-hidden="true"
+                                   style="color:#4CAF50;"></i>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <ul class="animate-hide data-rows">
+                    <li>
+                        <label class="label">name</label>
+                        <span class="field">
+                        <input ng-model="newData.activity.name"/>
+
+                        <input type="hidden" value="new field" ng-model="newData.activity.id"/>
+                       </span>
+                    </li>
+                    <li>
+                        <label class="label">category</label>
+                        <span class="field">
+                        <input ng-model="newData.activity.category"/>
+                       </span>
+                    </li>
+                    <li>
+                        <label class="label">description</label>
+                        <span class="field">
+                        <input ng-model="newData.activity.description"/>
+                       </span>
+                    </li>
+                    <li>
+
+                        <span class="form-group">
+                            <label class="label">Is Master Activity</label>
+                            <input  ng-model="newData.activity.isMasterActivity" type="checkbox" id="masterActivity">
+                            <label for="masterActivity">Check to lock MasterActivity</label>
+                        </span>
+
+
+                    </li>
+                    <li>
+                        <label class="label">departmentId</label>
+                        <span class="field">
+                        <input ng-value="departmentNiceName" ng-model="newData.activity.departmentId"/>
+                       </span>
+                    </li>
+                    <li>
+                        <label class="label">createdById</label>
+                        <span class="field">
+                        <input ng-value="userName" ng-model="newData.activity.createdById"/>
+                       </span>
+                    </li>
+                    <li>
+                        <label class="label">createdDate</label>
+                        <span class="field">
+                        <input ng-value="makeTime.time" ng-model="newData.activity.createdDate"/>
+                       </span>
+                    </li>
+                    <li>
+                        <label class="label">fields</label>
+                        <span>
+                            <a ng-click="addAFieldToActivity(newData.activity)"
+                               title="Open the Available Fields Drawer"
+                               ng-hide="!hideDrawer">
+                                Add Fields
+                                <i class="fa fa-plus-circle"
+                                   aria-hidden="true"></i>
+                                </a>
+                                <a title="Close the Available Fields Drawer"
+                                   ng-click="showDrawerClose();clearWorkingActivity()"
+                                   ng-hide="hideDrawer">
+                                    Done Editing
+                                <i class="fa fa-arrow-circle-right"
+                                   ng-mouseleave=""
+                                   ng-mouseover=""
+                                   aria-hidden="true"
+                                   style=""></i>
+                            </a>
+                        </span>
+                        <ul>
+                            <li class="addNewActivityFields" ng-repeat="field in newData.activity.fields" style="float:left" ng-class="{'last':$last}">
+                                <span>&nbsp;<a ng-click="showFieldInDrawer(field.name)">{{field.name}}</a></span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5"></div>
+</div>
+
+<div ng-if="enableFeature.addActivity" id="addRow" class="row">
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
+        <i
+                class="fa {{addSymbol}}"
+                ng-mouseleave="addMouseLeave()"
+                ng-mouseover="addMouseOver()"
+                ng-click="addNewActivity()"
+                aria-hidden="true">
+        </i>
+    </div>
+    <div class="col-md-10 col-sm-10 col-xs-10 col-lg-10"></div>
+</div>
+
+<div id="drawerRow" ng-hide="hideDrawer" class="row animate-hide {{hideDrawer!=false?'':'active'}}">
+    <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
+        <div class="row">
+            <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-hide="!hideFieldSearch">
+                <h5 ng-click="showFieldSearch()">Available Fields</h5>
+            </div>
+            <div id="searchFieldsControls1" class="searchFieldsControls col-md-4 col-sm-4 col-xs-4 col-lg-4" ng-hide="!hideFieldSearch">
+                <span class="fa-stack fa-lg" ng-click="showFieldSearch()">
+                  <i class="fa fa-circle fa-stack-2x" style="color:silver;"></i>
+                  <i class="fa fa-search fa-stack-1x fa-inverse"></i>
+                </span>
+                <span><i class="fa fa-plus-square" ng-click="hideNewField=!hideNewField" aria-hidden="true"></i></span>
+            </div>
+
+                <div id="searchFields-wrap" ng-hide="hideFieldSearch" class="col-md-9 col-sm-9 col-xs-9 col-lg-9">
+                    <input ng-model="searchFields"
+                            uib-typeahead="items.name for items in fields | filter:$viewValue | limitTo:8"
+                            class="form-control"
+                            aria-label="Search"
+                            placeholder="&#xf002;"
+                            aria-autocomplete="both"
+                            aria-haspopup="true"
+                            spellcheck="false"
+                            type="text"
+                            tabindex="0"
+                    id="searchFields">
+                </div>
+                <div ng-hide="hideFieldSearch"
+                        id="searchFieldsControls2"
+                        class="searchFieldsControls col-md-3 col-sm-3 col-xs-3 col-lg-3">
+                    <i class="fa fa-times"
+                       ng-hide=""
+                       ng-mouseleave=""
+                       ng-mouseover=""
+                       ng-click="closeFieldsSearch()"
+                       aria-hidden="true"
+                       style="">
+                    </i>
+                    <i class="fa fa-plus-square"
+                             ng-hide=""
+                             ng-mouseleave=""
+                             ng-mouseover=""
+                             ng-click=""
+                             aria-hidden="true"
+                             aria-hidden="true"></i>
+                    </div>
+
+        </div>
+        <div class="row" ng-show="workingActivity!=undefined">
+            <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
+                <h6>Add Fields to {{workingActivity.name?workingActivity.name:'New Activity'}}</h6>
+                </div>
+        </div>
+        <div class="fields" class="row">
+            <div
+                    ng-repeat="items in fields | filter:searchFields"
+                    class="col-md-12 col-sm-12 col-xs-12 col-lg-12 animate-hide {{items.hide?'':'active'}}"
+            >
+
+                <div ng-hide="!items.edit" class="row alert alert-warning">
+                    <div class="col-md-9 col-sm-9 col-xs-9 col-lg-9">
+                        Edited Fields must be submitted! &nbsp;&nbsp;<i class="fa fa-paper-plane fa-2x"
+                                                                      aria-hidden="true"
+                                                                      style="color: rgb(76, 175, 80);"></i>
+                    </div>
+                    </div>
+                <div class="row fieldControls">
+                    <div class="col-md-1 col-sm-1 col-xs-1 col-lg-1" ng-show="workingActivity!=undefined">
+                        <i class="fa fa-square-o"
+                           aria-hidden="true"
+                           ng-click="items.showIncluded=!items.showIncluded;addThisFieldToActivity($event,items)"
+                           data="add"
+                           ng-show="!items.showIncluded"></i>
+                        <i class="fa fa-check-square"
+                           aria-hidden="true"
+                           ng-click="items.showIncluded=!items.showIncluded;addThisFieldToActivity($event,items)"
+                           data="remove"
+                           ng-show="items.showIncluded"></i>
+                    </div>
+                    <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7" ng-show="workingActivity!=undefined">
+                        <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
+                    </div>
+
+                    <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-show="workingActivity===undefined">
+                        <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-4 col-lg-4">
+                        <ul class="controls" ng-hide="items.hide">
+                            <li ng-hide="items.hide">
+                                <i ng-click="items.edit=!items.edit" class="fa fa-pencil-square fa-2x"
+                                   aria-hidden="true"></i>
+                            </li>
+                            <li ng-hide="items.hide">
+                                <i class="fa fa-minus-square fa-2x" style="color:#D50000;" aria-hidden="true"></i>
+                            </li>
+                            <li ng-hide="items.hide">
+                                <i ng-click="submitFieldChanges(items)" ng-hide="!items.edit"
+                                   class="fa fa-paper-plane fa-2x" aria-hidden="true" style="color:#4CAF50;"></i>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <ul  class="animate-hide data-rows" ng-hide="items.hide">
+                    <li ng-if="items.instructions || items.edit">
+                        <span class="label">instructions</span>
+                        <span ng-hide="items.edit" class="field">{{items.instructions}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                            <input ng-model="items.instructions"/>
+                       </span>
+                    </li>
+                    <li ng-if="items.displayName || items.edit">
+                        <span class="label">displayName</span>
+                        <span ng-hide="items.edit" class="field">{{items.displayName}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                            <input ng-model="items.displayName"/>
+                       </span>
+
+                    </li>
+                    <li ng-if="items.categoryName || items.edit">
+                        <span class="label">categoryName</span>
+                        <span ng-hide="items.edit" class="field">{{items.categoryName}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                            <input ng-model="items.categoryName"/>
+                       </span>
+                    </li>
+                    <li  ng-if="items.fieldDataType || items.edit">
+                        <span class="label">Data Type</span>
+                        <span ng-hide="items.edit" class="field">{{getFieldDataType(items.fieldDataType)}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                            <select
+                                    ng-model="items.fieldDataType"
+                                    ng-options="options.id as options.name for options in dataTypesList">
+                            </select>
+                        </span>
+                    </li>
+                    <li ng-if="items.childFields.length>0">
+                        <span class="label" style="float:left;">Child Fields</span>
+                        <ul>
+                            <li class="childFields"
+                                ng-repeat="childField in items.childFields"
+                                ng-class="{'last':$last}"
+                            style="float:left">
+                                <span>&nbsp;{{childField.name}}</span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="showDrawer" class="row ">
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
+        <span class="fa-stack fa-lg"
+              ng-hide="!hideDrawer">
+          <i class="fa fa-square fa-stack-2x"></i>
+          <i class="fa {{drawerSymbol}} fa-stack-1x fa-inverse"
+             ng-mouseleave="drawerMouseLeave()"
+             ng-mouseover="drawerMouseOver()"
+             ng-click="hideDrawer=!hideDrawer"
+             aria-hidden="true"
+          ></i>
+        </span>
+
+        <i
+                class="fa {{closeDrawerSymbol}}"
+                ng-hide="hideDrawer"
+                ng-mouseleave="closeDrawerMouseLeave()"
+                ng-mouseover="closeDrawerMouseOver()"
+                ng-click="showDrawerClose();clearWorkingActivity()"
+                aria-hidden="true">
+        </i>
+
+    </div>
+    <div class="col-md-10 col-sm-10 col-xs-10 col-lg-10"></div>
+</div>
+
+<div ng-if="enableFeature.addField"
+     id="newFieldRow"
+     ng-hide="hideNewField"
+     class="row animate-hide {{hideNewField!=false?'':'active'}}">
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
+    <div class="fields col-md-5 col-sm-5 col-xs-5 col-lg-5">
+        <div>
+
+            <div id="newField">
+                <div class="row fieldControls">
+                    <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7">
+                        <h6>Create a new Field</h6>
+                    </div>
+                    <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
+                        <ul class="controls">
+                            <li>
+                                <i ng-click="clearNewField()" class="fa fa-trash fa-2x" style="color:#D50000;"
+                                   aria-hidden="true"></i>
+                            </li>
+                            <li>
+                                <i ng-click="postNewField()"
                                    class="fa fa-paper-plane fa-2x"
                                    aria-hidden="true"
                                    style="color:#4CAF50;"></i>
@@ -266,212 +576,4 @@
 
     </div>
     <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5"></div>
-</div>
-
-<div id="addRow" class="row">
-    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
-        <i
-                class="fa {{addSymbol}}"
-                ng-mouseleave="addMouseLeave()"
-                ng-mouseover="addMouseOver()"
-                ng-click="hideNew=!hideNew;addNewActivity()"
-                aria-hidden="true">
-        </i>
-    </div>
-    <div class="col-md-10 col-sm-10 col-xs-10 col-lg-10"></div>
-</div>
-
-<div id="drawerRow" ng-hide="hideDrawer" class="row animate-hide {{hideDrawer!=false?'':'active'}}">
-    <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
-        <div class="row">
-            <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-hide="!hideFieldSearch">
-                <h5 ng-click="showFieldSearch()">Available Fields</h5>
-            </div>
-            <div id="searchFieldsControls1" class="searchFieldsControls col-md-4 col-sm-4 col-xs-4 col-lg-4" ng-hide="!hideFieldSearch">
-                <span class="fa-stack fa-lg" ng-click="showFieldSearch()">
-                  <i class="fa fa-circle fa-stack-2x" style="color:silver;"></i>
-                  <i class="fa fa-search fa-stack-1x fa-inverse"></i>
-                </span>
-                <span><i class="fa fa-plus-square" aria-hidden="true"></i></span>
-            </div>
-
-                <div id="searchFields-wrap" ng-hide="hideFieldSearch" class="col-md-9 col-sm-9 col-xs-9 col-lg-9">
-                    <input ng-model="searchFields"
-                            uib-typeahead="items.name for items in fields | filter:$viewValue | limitTo:8"
-                            class="form-control"
-                            aria-label="Search"
-                            placeholder="&#xf002;"
-                            aria-autocomplete="both"
-                            aria-haspopup="true"
-                            spellcheck="false"
-                            type="text"
-                            tabindex="0"
-                    id="searchFields">
-                </div>
-                <div ng-hide="hideFieldSearch"
-                        id="searchFieldsControls2"
-                        class="searchFieldsControls col-md-3 col-sm-3 col-xs-3 col-lg-3">
-                    <i class="fa fa-times"
-                       ng-hide=""
-                       ng-mouseleave=""
-                       ng-mouseover=""
-                       ng-click="closeFieldsSearch()"
-                       aria-hidden="true"
-                       style="">
-                    </i>
-                    <i class="fa fa-plus-square"
-                             ng-hide=""
-                             ng-mouseleave=""
-                             ng-mouseover=""
-                             ng-click=""
-                             aria-hidden="true"
-                             aria-hidden="true"></i>
-                    </div>
-
-        </div>
-        <div class="row" ng-show="workingActivity!=undefined">
-            <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
-                <h6>Add Fields to {{workingActivity.name}}</h6>
-                </div>
-        </div>
-        <div class="fields" class="row">
-            <div
-                    ng-repeat="items in fields | filter:searchFields"
-                    class="col-md-12 col-sm-12 col-xs-12 col-lg-12 animate-hide {{items.hide?'':'active'}}"
-            >
-                <div class="row fieldControls">
-                    <div class="col-md-1 col-sm-1 col-xs-1 col-lg-1" ng-show="workingActivity!=undefined">
-                        <i class="fa fa-square-o"
-                           aria-hidden="true"
-                           ng-click="items.showIncluded=!items.showIncluded;addThisFieldToActivity($event,items)"
-                           data="add"
-                           ng-show="!items.showIncluded"></i>
-                        <i class="fa fa-check-square"
-                           aria-hidden="true"
-                           ng-click="items.showIncluded=!items.showIncluded;addThisFieldToActivity($event,items)"
-                           data="remove"
-                           ng-show="items.showIncluded"></i>
-                    </div>
-                    <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7" ng-show="workingActivity!=undefined">
-                        <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
-                    </div>
-
-                    <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-show="workingActivity===undefined">
-                        <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
-                    </div>
-                    <div class="col-md-4 col-sm-4 col-xs-4 col-lg-4">
-                        <ul class="controls" ng-hide="items.hide">
-                            <li ng-hide="items.hide">
-                                <i ng-click="items.edit=!items.edit" class="fa fa-pencil-square fa-2x"
-                                   aria-hidden="true"></i>
-                            </li>
-                            <li ng-hide="items.hide">
-                                <i class="fa fa-minus-square fa-2x" style="color:#D50000;" aria-hidden="true"></i>
-                            </li>
-                            <li ng-hide="items.hide">
-                                <i ng-click="submitChanges(items)" ng-hide="!items.edit"
-                                   class="fa fa-paper-plane fa-2x" aria-hidden="true" style="color:#4CAF50;"></i>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <ul class="animate-hide data-rows" ng-hide="items.hide">
-                    <li>
-                        <span class="label">instructions</span>
-                        <span ng-hide="items.edit" class="field">{{items.instructions}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.instructions"/>
-                       </span>
-                    </li>
-                    <li>
-                        <span class="label">displayName</span>
-                        <span ng-hide="items.edit" class="field">{{items.displayName}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.displayName"/>
-                       </span>
-                    </li>
-                    <!--<li><span class="label">canBeAutomated</span>-->
-                        <!--<span ng-hide="items.edit" class="field">{{items.canBeAutomated}}</span>-->
-                        <!--<span ng-hide="!items.edit" class="field">-->
-                        <!--<input ng-model="items.canBeAutomated"/>-->
-                       <!--</span>-->
-                    <!--</li>-->
-                    <!--<li><span class="label">categoryId</span>-->
-                        <!--<span ng-hide="items.edit" class="field">{{items.categoryId}}</span>-->
-                        <!--<span ng-hide="!items.edit" class="field">-->
-                        <!--<input ng-model="items.categoryId"/>-->
-                       <!--</span>-->
-                    <!--</li>-->
-                    <li><span class="label">categoryName</span>
-                        <span ng-hide="items.edit" class="field">{{items.categoryName}}</span>
-                        <span ng-hide="!items.edit" class="field">
-                        <input ng-model="items.categoryName"/>
-                       </span>
-                    </li>
-                    <!--<li><span class="label">createdById</span>-->
-                        <!--<span ng-hide="items.edit" class="field">{{items.createdById}}</span>-->
-                        <!--<span ng-hide="!items.edit" class="field">-->
-                        <!--<input ng-model="items.createdById"/>-->
-                       <!--</span>-->
-                    <!--</li>-->
-                    <!--<li><span class="label">createdDate</span>-->
-                        <!--<span ng-hide="items.edit" class="field">{{items.createdDate}}</span>-->
-                        <!--<span ng-hide="!items.edit" class="field">-->
-                        <!--<input ng-model="items.createdDate"/>-->
-                       <!--</span>-->
-                    <!--</li>-->
-                    <!--<li><span class="label">modifiedById</span>-->
-                        <!--<span ng-hide="items.edit" class="field">{{items.modifiedById}}</span>-->
-                        <!--<span ng-hide="!items.edit" class="field">-->
-                        <!--<input ng-model="items.modifiedById"/>-->
-                       <!--</span>-->
-                    <!--</li>-->
-                    <!--<li><span class="label">modifiedDate</span>-->
-                        <!--<span ng-hide="items.edit" class="field">{{items.modifiedDate}}</span>-->
-                        <!--<span ng-hide="!items.edit" class="field">-->
-                        <!--<input ng-model="items.modifiedDate"/>-->
-                        <!--</span>-->
-                    <!--</li>-->
-                    <li>
-                        <ul>
-                            <li class="childFields"
-                                ng-repeat="childField in items.childFields"
-                                ng-class="{'last':$last}"
-                            style="float:left">
-                                <span>&nbsp;<a>{{childField.name}}</a></span>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="showDrawer" class="row ">
-    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
-        <span class="fa-stack fa-lg"
-              ng-hide="!hideDrawer">
-          <i class="fa fa-square fa-stack-2x"></i>
-          <i class="fa {{drawerSymbol}} fa-stack-1x fa-inverse"
-             ng-mouseleave="drawerMouseLeave()"
-             ng-mouseover="drawerMouseOver()"
-             ng-click="hideDrawer=!hideDrawer"
-             aria-hidden="true"
-          ></i>
-        </span>
-
-        <i
-                class="fa {{closeDrawerSymbol}}"
-                ng-hide="hideDrawer"
-                ng-mouseleave="closeDrawerMouseLeave()"
-                ng-mouseover="closeDrawerMouseOver()"
-                ng-click="showDrawerClose();clearWorkingActivity()"
-                aria-hidden="true">
-        </i>
-
-    </div>
-    <div class="col-md-10 col-sm-10 col-xs-10 col-lg-10"></div>
 </div>
