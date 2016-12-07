@@ -1,4 +1,4 @@
-angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','ngAnimate','ui.bootstrap','angularMoment'])
+angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','ngAnimate','ui.bootstrap','angularMoment','angular-sortable-view'])
     .controller('homeController', function ($scope,httpService) {
         httpService.getSomething().then(function(response){
             console.log(response)
@@ -26,13 +26,18 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             })
         }
     })
-    .controller('configureController',function($scope,httpService,localStorageService,moment){
+    .controller('configureController',function($timeout,$scope,httpService,localStorageService,moment){
         function getItem(key) {
             return localStorageService.get(key);
         }
         $scope.enableFeature = {
             addActivity : true,
-            addField : true
+            copyActivity:true,
+            sortActivities:false,
+            addField : true,
+            copyField:true,
+            //TODO enable drag sort
+            dragFieldSort:false
         };
         $scope.makeTime = {
             time:moment().format('L')
@@ -41,18 +46,27 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         $scope.userName = getItem('userName');
         $scope.departmentNiceName = getItem('departmentNiceName');
         $scope.departmentId = getItem('departmentId');
+        $scope.newActivityID = 0;
+        $scope.newFieldID = 0;
         $scope.fields = [];
         $scope.activities = [];
+        $scope.activityCats = [];
+        $scope.activitySortBy = "name";
+        $scope.activitySortTypes = [{value:'name',name:'name'},{value:'category',name:'category'}];
         $scope.restore = {
             fields : [],
             activities : []
         };
         $scope.newData = {
             field:{
+                id:0,
                 edit:true,
-                hide:true
+                hide:true,
+                hideRow:true,
+                childFields:[]
             },
             activity:{
+                id:0,
                 edit:true,
                 hide:true,
                 hideRow:true,
@@ -69,6 +83,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         $scope.hideFieldSearch = true;
         $scope.addFieldstoActivityTitle;
         $scope.workingActivity;
+        $scope.workingField;
         $scope.addMouseOver = function(){
             $scope.addSymbol = 'fa-pencil-square';
         };
@@ -78,15 +93,124 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         };
         $scope.addClick = function(){
         };
-        $scope.clearNewActivity = function(){
-            $scope.newActivity = {};
+        $scope.clearNewActivity = function(form){
+            $scope.newData.activity = {};
             $scope.hideNewActivity = true;
             $scope.workingActivity=undefined;
+            form.$setPristine();
+            form.$setUntouched();
         };
-        $scope.clearNewField = function(){
+        $scope.clearNewField = function(form){
             $scope.newField = {};
             $scope.hideNewField = true;
             $scope.workingField=undefined;
+            form.$setPristine();
+            form.$setUntouched();
+        };
+        $scope.postNewActivity = function(form){
+            if(!form.$invalid){
+                angular.forEach($scope.activities,function(value,index){
+                    if(value.id===$scope.newData.activity.id){
+                        value.hide=false;
+                        value.hideRow=false;
+                        value.edit=false;
+                        $timeout(function(){value.hide=true},1000);
+                    }
+                });
+                var postData = {
+                    "fields": $scope.newData.activity.fields,
+                    "id": $scope.newData.activity.id,
+                    "name": $scope.newData.activity.name,
+                    "category": $scope.newData.activity.category,
+                    "description": $scope.newData.activity.description,
+                    "isMasterActivity": $scope.newData.activity.isMasterActivity,
+                    "departmentId": $scope.departmentId,
+                    "createdById": $scope.userId,
+                    "createdDate": moment().format('L'),
+                    "modifiedById": $scope.userId,
+                    "modifiedDate": moment().format('L')
+                };
+                var newData = {
+                    edit:true,
+                    hide:true,
+                    hideRow:true,
+                    fields:[]
+                };
+                $scope.newActivityID++;
+                newData.id = $scope.newActivityID;
+                $scope.newData.activity = newData;
+                $scope.clearNewActivity();
+                console.log(form)
+                form.$setPristine();
+                form.$setUntouched();
+
+                // httpService.postData('Data/Field/',postData).then(function(response){
+                //     console.log(response)
+                // },function errorCallabck(response){
+                //     console.log(response)
+                // })
+            }
+        };
+        $scope.openEditField = function(field){
+            $scope.workingActivity = field;
+            angular.forEach($scope.fields,function(value,index){
+                value.block = false;
+                if(value.fieldId===field.fieldId){
+                    if(field.edit){
+                        $scope.workingActivity = undefined;
+                        value=false;
+                    }
+                    value.block = true;
+                }
+            });
+        };
+        $scope.postNewField = function(form){
+            console.log(form)
+            if(!form.$invalid){
+                console.log($scope.newData.field)
+                angular.forEach($scope.fields,function(value,index){
+                    value.showIncluded = false;
+                    if(value.id===$scope.newData.field.id){
+                        value.hide=false;
+                        value.hideRow=false;
+                        value.edit=false;
+                        $timeout(function(){value.hide=true},1000);
+                    }
+                });
+                var postData = {
+                    "childFields": $scope.newData.field.childFields,
+                    "id": $scope.newData.field.id,
+                    "name": $scope.newData.field.name,
+                    "category": $scope.newData.field.category,
+                    "description": $scope.newData.field.description,
+                    "isMasterActivity": $scope.newData.field.isMasterField,
+                    "departmentId": $scope.departmentId,
+                    "createdById": $scope.userId,
+                    "createdDate": moment().format('L'),
+                    "modifiedById": $scope.userId,
+                    "modifiedDate": moment().format('L')
+                };
+                var newData = {
+                    edit:true,
+                    hide:true,
+                    hideRow:true,
+                    fields:[]
+                };
+                $scope.workingActivity = undefined;
+                $scope.newFieldID++;
+                newData.id = $scope.newFieldID;
+                $scope.newData.field = newData;
+                $scope.clearNewField(form);
+                console.log(form)
+                form.$setPristine();
+                form.$setUntouched();
+
+                // httpService.postData('Data/Field/',postData).then(function(response){
+                //     console.log(response)
+                // },function errorCallabck(response){
+                //     console.log(response)
+                // })
+            }
         };
         httpService.getUser().then(function(response){
             $scope.userInfo = response.data;
@@ -94,6 +218,18 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         });
         httpService.getData('Data/Activities').then(function(response){
             angular.forEach(response.data,function(value,key){
+                if($scope.activityCats.length<1){
+                    $scope.activityCats.push(value.category)
+                }
+                var found = false;
+                angular.forEach($scope.activityCats,function(Avalue,Aindex){
+                   if(Avalue===value.category){
+                      found = true
+                   }
+                });
+                if(!found){
+                    $scope.activityCats.push(value.category)
+                }
                 value.hide = true;
                 value.edit = false;
                 value.hideRow = false;
@@ -112,9 +248,12 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         });
         httpService.getData('Data/Fields').then(function(response){
             angular.forEach(response.data,function(value,key){
+                value.fieldName = value.name;
+                value.fieldId = value.id;
                 value.hide = true;
                 value.edit = false;
                 value.showIncluded = false;
+                value.block = false;
                 $scope.fields.push(value);
                 $scope.restore.fields.push(value);
             })
@@ -129,27 +268,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
           });
             return usedID;
         };
-        $scope.postNewActivity = function(){
-            console.log($scope.newData.activity);
-            var postData = {
-                "fields": $scope.newData.activity.fields,
-                "id": $scope.newData.activity.id,
-                "name": $scope.newData.activity.name,
-                "category": $scope.newData.activity.category,
-                "description": $scope.newData.activity.description,
-                "isMasterActivity": $scope.newData.activity.isMasterActivity,
-                "departmentId": $scope.newData.activity.departmentId,
-                "createdById": $scope.newData.activity.createdById,
-                "createdDate": $scope.newData.activity.createdDate,
-                "modifiedById": $scope.newData.activity.modifiedById,
-                "modifiedDate": $scope.newData.activity.modifiedDate
-            };
-            httpService.postData('Data/Field/',postData).then(function(response){
-                console.log(response)
-            },function errorCallabck(response){
-                console.log(response)
-            })
-        };
+        $scope.submitValid = true;
         $scope.submitActivityChanges = function(activity){
             console.log(activity);
             var putData = {
@@ -159,7 +278,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 "category": activity.category,
                 "description": activity.description,
                 "isMasterActivity": activity.isMasterActivity,
-                "departmentId": activity.departmentId,
+                "departmentId": $scope.departmentId,
                 "createdById": activity.createdById,
                 "createdDate": activity.createdDate,
                 "modifiedById": $scope.userId,
@@ -167,24 +286,27 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             };
             angular.forEach(activity.fields,function(value,index){
                var fieldData = {
-                   canBeAutomated:value.canBeAutomated,
-                   categoryId:value.categoryId,
-                   categoryName:value.categoryName,
-                   childFields:value.childFields,
-                   createdById:value.createdById,
-                   createdDate:value.createdDate,
-                   displayName:value.displayName,
-                   fieldDataType:value.fieldDataType,
-                   fieldParentId:value.fieldParentId,
-                   id :value.id,
-                   instructions : value.instructions,
-                   isMasterField : value.isMasterField,
-                   listId:value.listId,
-                   modifiedById :value.modifiedById,
-                   modifiedDate: value.modifiedDate,
-                   name:value.name
+                   // canBeAutomated:value.canBeAutomated,
+                   // categoryId:value.categoryId,
+                   // categoryName:value.categoryName,
+                   // childFields:value.childFields,
+                   // createdById:value.createdById,
+                   // createdDate:value.createdDate,
+                   // displayName:value.displayName,
+                   activityId:value.activityId,
+                   fieldId:value.fieldId,
+                   ordinal:value.ordinal,
+                   // fieldDataType:value.fieldDataType,
+                   // fieldParentId:value.fieldParentId,
+                   // id :value.id,
+                   // instructions : value.instructions,
+                   // isMasterField : value.isMasterField,
+                   // listId:value.listId,
+                   // modifiedById :value.modifiedById,
+                   // modifiedDate: value.modifiedDate,
+                   fieldName:value.name
                }
-               postData.fields.push(fieldData);
+                putData.fields.push(fieldData);
             });
             console.log(putData)
             //ready to PUT postData
@@ -247,14 +369,30 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             $scope.searchFields = fieldId;
             $scope.hideFieldSearch = false;
         };
+        $scope.addChildFieldToField = function(field){
+            console.log(field)
+            $scope.workingActivity = field;
+            field.name?field.name=field.name:field.name="My New Field";
+            $scope.addFieldstoActivityTitle = field.name;
+            angular.forEach($scope.fields,function(value,index){
+                $scope.fields[index].showIncluded = false;
+                angular.forEach(field.fields,function(value2,index2){
+                    if(value2.id===value.id){
+                        $scope.fields[index].showIncluded = true;
+                    }
+                })
+            })
+        };
         $scope.addAFieldToActivity = function(activity){
+            console.log(activity.fields)
             $scope.workingActivity = activity;
             $scope.hideDrawer = false;
             $scope.addFieldstoActivityTitle = activity.name;
             angular.forEach($scope.fields,function(value,index){
+                console.log(value)
                 $scope.fields[index].showIncluded = false;
                 angular.forEach(activity.fields,function(value2,index2){
-                    if(value2.id===value.id){
+                    if(value2.fieldId===value.fieldId){
                         $scope.fields[index].showIncluded = true;
                     }
                 })
@@ -264,9 +402,19 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             angular.forEach($scope.activities,function(value,index){
                 if(value.id===$scope.workingActivity.id){
                     if(obj.target.attributes.data.value==="add"){
-                        field.fieldName = field.name;
-                        value.fields.push(field);
-                        value.edit=true;
+                        var fieldExists=false;
+                        angular.forEach(value.fields,function(Fvalue,Findex){
+                            if(Fvalue.fieldId===field.id){
+                                fieldExists=true;
+                            }
+                        });
+                        if(!fieldExists){
+                            field.ordinal = 0;
+                            field.fieldName = field.name;
+                            field.activityId = value.id;
+                            value.fields.push(field);
+                            value.edit=true;
+                        }
                     }
                     if(obj.target.attributes.data.value==="remove"){
                         var foundIndex = undefined;
@@ -279,7 +427,26 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                         value.edit=true;
                     }
                 }
-            })
+            });
+            angular.forEach($scope.fields,function(value,index){
+                if(value.id===$scope.workingActivity.id){
+                    if(obj.target.attributes.data.value==="add"){
+                        field.fieldName = field.name;
+                        value.childFields.push(field);
+                        value.edit=true;
+                    }
+                    if(obj.target.attributes.data.value==="remove"){
+                        var foundIndex = undefined;
+                        angular.forEach(value.childFields,function(Fvalue,Findex){
+                            if(Fvalue.id===field.id){
+                                foundIndex = Findex;
+                            }
+                        });
+                        value.childFields.splice(foundIndex,1);
+                        value.edit=true;
+                    }
+                }
+            });
         };
         $scope.toggleFieldsLabel = function(obj,activity){
             angular.forEach($scope.activities,function(value,index){
@@ -296,13 +463,56 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 }
             })
         };
-        $scope.addNewActivity = function(){
+        $scope.addNewField = function(field){
+            console.log(field)
+            $scope.hideNewField=!$scope.hideNewField;
+            if(!$scope.hideNewField){
+                var newData = {
+                    edit:true,
+                    hide:true,
+                    hideRow:true,
+                    childFields:[]
+                };
+                if(field){
+                    newData.canBeAutomated = field.canBeAutomated;
+                    newData.categoryId = field.categoryId;
+                    newData.categoryName = field.categoryName;
+                    newData.childFields = field.childFields;
+                    newData.fieldDataType = field.fieldDataType;
+                    newData.fieldDataTypeId = field.fieldDataTypeId;
+                    newData.childFields = field.childFields;
+                    newData.instructions = field.instructions;
+                    newData.isMasterField = field.isMasterField;
+                    newData.listId = field.listId;
+                }
+                $scope.newFieldID++;
+                newData.id = $scope.newFieldID;
+                $scope.newData.field = newData;
+                $scope.fields.push(newData);
+            }
+        };
+        $scope.addNewActivity = function(activity){
             $scope.hideNewActivity=!$scope.hideNewActivity;
-            console.log($scope.hideNewActivity);
-            $scope.activities.push($scope.newData.activity)
+            if(!$scope.hideNewActivity){
+                var newData = {
+                    edit:true,
+                    hide:true,
+                    hideRow:true,
+                    fields:[]
+                };
+                if(activity){
+                    newData.category = activity.category;
+                    newData.fields = activity.fields;
+                    newData.departmentId = activity.departmentId;
+                    newData.isMasterActivity = activity.isMasterActivity
+                }
+                $scope.newActivityID++;
+                newData.id = $scope.newActivityID;
+                $scope.newData.activity = newData;
+                $scope.activities.push(newData);
+            }
         };
         $scope.clearWorkingActivity = function(activity){
-
             if(!activity){
                 $scope.workingActivity = activity;
                 angular.forEach($scope.activities,function(value,index){
@@ -332,6 +542,8 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 if(value.id===activity.id){
                     httpService.getData('Data/Activity/',activity.id).then(function(response){
                         activity.fields = response.data.fields;
+                        console.log($scope.workingActivity)
+                        console.log(response.data)
                         $scope.workingActivity.fields = response.data.fields;
                         angular.forEach($scope.fields,function(value,index){
                             value.showIncluded = false;
@@ -373,7 +585,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 $scope.userInfo = {}
                 $scope.welcomeButton = function(){
                     $scope.open = !$scope.open;
-                }
+                };
                 $scope.routesArray = [];
                 $scope.logOut = function(){
                     logoutService.logout()
@@ -404,12 +616,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                         // console.log(response)
                     });
                     $scope.open = false;
-
-           //          console.log(current)
-           // console.log(event)
-           //          console.log(previous)
-           //          console.log(httpService.checkCookie('ARC_UserToken')!='')
-                })
+                });
             }
         };
     })
