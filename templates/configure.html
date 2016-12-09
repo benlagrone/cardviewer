@@ -169,7 +169,9 @@
                         </ul>
                     </li>
                 </ul>
-                <ul ng-if="enableFeature.dragFieldSort" class="animate-hide data-rows" ng-hide="items.hide">
+                <ul ng-if="enableFeature.dragFieldSort"
+                    class="animate-hide data-rows"
+                    ng-hide="items.hide">
                     <li ng-if="items.name">
                         <span class="label">name</span>
                         <span ng-hide="items.edit" class="field">{{activities[$index].name}}</span>
@@ -468,13 +470,13 @@
                            data="remove"
                            ng-if="!items.block"
                            ng-show="items.showIncluded;"></i>
-                        <i title="This Field can not be added"
-                                class="fa fa-ban"
-                           aria-hidden="true"
-                           ng-click=""
-                           data=""
-                           style="color:orange;"
-                           ng-show="items.block"></i>
+                        <!--<i title="This Field can not be added"-->
+                                <!--class="fa fa-ban"-->
+                           <!--aria-hidden="true"-->
+                           <!--ng-click=""-->
+                           <!--data=""-->
+                           <!--style="color:orange;"-->
+                           <!--ng-show="items.block"></i>-->
                     </div>
                     <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7" ng-show="workingActivity!=undefined">
                         <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
@@ -499,7 +501,10 @@
                                    aria-hidden="true"></i>
                             </li>
                             <li ng-hide="items.hide">
-                                <i class="fa fa-minus-square fa-2x" style="color:#D50000;" aria-hidden="true"></i>
+                                <i class="fa fa-minus-square fa-2x"
+                                   ng-click="removeItem(items)"
+                                   style="color:#D50000;"
+                                   aria-hidden="true"></i>
                             </li>
                             <li ng-hide="items.hide">
                                 <i ng-click="submitFieldChanges(items)" ng-hide="!items.edit"

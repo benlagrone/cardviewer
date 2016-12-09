@@ -88,6 +88,20 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             $scope.addSymbol = 'fa-pencil-square';
         };
         $scope.searchFields;
+        $scope.removeItem = function(item){
+            console.log(item)
+            angular.forEach($scope.fields,function(value,index){
+                if(value.fieldId===item.fieldId){
+                    $scope.fields.splice(index,1);
+                    // httpService.deleteData('Data/Fields',).then(response){
+                    //     console.log(response)
+                    // },function errorCallback(response){
+                    //     console.log(response)
+                    // });
+                    // return;
+                }
+            })
+        };
         $scope.addMouseLeave = function(){
             $scope.addSymbol = 'fa-plus-square';
         };
@@ -565,7 +579,132 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
     .controller('planController',function($scope,httpService){
 
     })
-    .controller('patientController',function($scope,httpService){
+    .controller('patientController',function($scope,httpService,moment,$window,$timeout){
+        $scope.patient = {
+            mrn:123456,
+            field:"abcdfe"
+        };
+        $scope.formElements = [
+            {name:"Date of Evaluation",type:"text"},
+        {name:"NEUT%",type:"text"},
+        {name:"Lymph%",type:"text"},
+        {name:"Mono%",type:"text"},
+        {name:"Eos%",type:"text"},
+        {name:"Baso%",type:"text"},
+        {name:"IGRE%",type:"text"},
+        {name:"NEUT ABS (K/uL)",type:"text"},
+        {name:"LYMPH ABS (K/uL)",type:"text"},
+        {name:"MONO ABS (K/uL)",type:"text"},
+        {name:"EOS ABS (K/uL)",type:"text"},
+        {name:"BASO ABS (K/uL)",type:"text"},
+        {name:"IG ABS (K/uL)",type:"text"},
+        {name:"WBC (K/uL)",type:"text"},
+        {name:"RBC (M/uL)",type:"text"},
+        {name:"HGB (gm/dl)",type:"text"},
+        {name:"HCT (%)",type:"text"},
+        {name:"MCV (fL)",type:"text"},
+        {name:"MCH (pg)",type:"text"},
+        {name:"MCHC (gm/dl)",type:"text"},
+        {name:"RDWSD (fL)",type:"text"},
+        {name:"RDWCV (%)",type:"text"},
+        {name:"Platelet (K/uL)",type:"text"},
+        {name:"MPV (fL)",type:"text"},
+        {name:"INRBC (%)",type:"text"},
+        {name:"Collected Elsewhere",type:"text"}
+        ];
+        $scope.protocols = [
+            {id:"20012-1236"},
+            {id:"20012-1236"},
+            {id:"20012-1236"},
+            {id:"20012-1236"},
+            {id:"20012-1236"},
+            {id:"20012-1236"},
+            {id:"20012-1236"},
+            {id:"20012-1236"}
+        ];
+        $scope.types = [
+            {id:"123",name:"Core",title:"Toggle Core",icon:"fa-diamond",action:"function1",data:"data1"},
+            {id:"123",name:"MRN",title:"Toggle MRN",icon:"fa-eye",action:"function2",data:"data2"},
+            {id:"132",name:"SponsorSubjectId",title:"Toggle SponsorSubjectId",icon:"fa-crosshairs",action:"function3",data:"data3"}
+        ];
+        $scope.function1 = function(data){
+            console.log(data)
+        };
+        $scope.random = function(x){
+            var number = Math.floor((Math.random() * 100*x) + 1);
+            return number;
+        };
+        $scope.generateTimepoints = function(x){
+            var timePointsArray = [];
+            for(i=0;i<$scope.random(x);i++){
+                var point = {};
+                point.numer = i;
+                timePointsArray.push(point)
+            }
+            return timePointsArray;
+        };
+        $scope.makeTime = function(){
+            var theTime = moment().format('L');
+            return theTime;
+        };
+        $scope.availHeight = window.outerHeight;
+        $scope.timePoints = $scope.generateTimepoints(10);
+        $scope.dataRows = $scope.generateTimepoints(7);
+        $scope.number = $scope.random();
+        $scope.search;
+        $scope.select;
+        $scope.timePointsWidth = 91;
+        $scope.gridPos = {
+            left:0,
+            right:0
+        };
+        $scope.hideNew = false;
+        $scope.revealHide = function(){
+            $scope.hideNew=!$scope.hideNew;
+            console.log('open')
+        }
+        $scope.fooElement = document.getElementById('scrollMe');
+        $scope.fooElement2 = document.getElementById('timePointsHeader');
+        $scope.grid = document.getElementById('scrollGrid');
+        $scope.foo = 'relative'
+        $scope.fixMe = function(){
+            console.log('bar')
+            return $scope.foo
+        }
+        angular.element($scope.fooElement).bind("scroll",function(){
+            $scope.fooElement2.left=$scope.gridPos.left;
+        })
+        angular.element($scope.fooElement2).bind("scroll",function(){
+            var docLeft = $("#timePointsHeader").scrollLeft()-3;
+            var docTop = $("#timePointsHeader").scrollTop();
+            if ($scope.gridPos.left !== docLeft){
+                $scope.startScroll(docLeft,docTop)
+            }
+            $timeout.cancel(timer);
+            var timer = $timeout(function(){
+                $scope.stopScroll(docLeft,docTop);
+            },100);
+        });
+        $scope.startScroll = function(left,top){
+            $('.dataRows li:first-child').css('position','absolute')
+            $('.dataRows li:first-child').css('top',top)
+        };
+        $scope.stopScroll = function(left,top){
+            $('.dataRows li:first-child').css('position','relative')
+             $('.dataRows li:first-child').css('top',top);
+        };
+        $('html').addClass('hideOverflow')
+        $(function(){
+            $("#scrollMe").scroll(function(){
+                $("#timePointsHeader")
+                    .scrollLeft($("#scrollMe").scrollLeft());
+            });
+            $("#timePointsHeader").scroll(function(){
+                $("#scrollMe")
+                    .scrollLeft($("#timePointsHeader").scrollLeft());
+            });
+        });
+        console.log($scope)
 
     })
     .controller('protocolController',function($scope,httpService){
@@ -686,9 +825,24 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 httpWorker.checkAuthLogOut();
-                // console.log(httpWorker.reqSpecs.headers)
                 return $http({
                     method:'GET',
+                    url:httpWorker.apiRoot.getPath()+path1+param+path2,
+                    headers:httpWorker.reqSpecs.headers
+                })
+            } else {
+                // console.log('not logged in');
+                logoutService.logout()
+            }
+        };
+        httpWorker.deleteData = function(path1,param,path2){
+            param = param?param:'';
+            path2 = path2?path2:'';
+            if(httpWorker.checkCookie('ARC_UserToken')!=null){
+                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+                httpWorker.checkAuthLogOut();
+                return $http({
+                    method:'DELETE',
                     url:httpWorker.apiRoot.getPath()+path1+param+path2,
                     headers:httpWorker.reqSpecs.headers
                 })
@@ -736,7 +890,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             devRoot: 'https://gumedonc-dev.mdanderson.edu',
             localRoot: 'http://localhost:56700',
             getPath: function(){
-                var thePath = httpWorker.apiRoot.local;
+                var thePath = httpWorker.apiRoot.dev;
 
                 return thePath;
             }

@@ -1,0 +1,144 @@
+
+<div id="activitiesHeader" class="row">
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2" style="padding:7px 10px;">
+        <h5>Patient Activites</h5>
+    </div>
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2" style="padding:7px 20px;">
+        <select
+                ng-model="select"
+                ng-options="protocols.id as options.id for options in protocols"
+                class="mdb-select">
+
+        </select>
+    </div>
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
+        <ul class="activitySelector">
+            <li ng-repeat="item in types">
+                <i title="{{item.title}}" class="fa {{item.icon}}" ng-click="function1(item.data)" data="{{item.data}}" aria-hidden="true"></i>
+                <i class="fa fa-id-badge" aria-hidden="true"></i>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-3 col-sm-3 col-xs-3 col-lg-3">
+        <div id="searchFilter" class="row">
+            <div class="magnifyingglass col-md-12 col-sm-12 col-xs-12 col-lg-12">
+                <input
+                        ng-model="search"
+                        class="form-control"
+                        aria-label="Search"
+                        ng-click=""
+                        placeholder="&#xf002;"
+                        aria-autocomplete="both"
+                        aria-haspopup="true"
+                        spellcheck="false"
+                        type="text"
+                        tabindex="0">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="timePointsTitle" class="row">
+    <div id="scrollMe"
+         class="col-md-12 col-sm-12 col-xs-12 col-lg-12"
+         style="white-space: nowrap;overflow-x:scroll;">
+        <h5 id="titleScroll" style="height:25px;width:{{timePoints.length*timePointsWidth}}px">
+            <span style="position:fixed;" class="title">Patient Timepoints</span>
+        </h5>
+    </div>
+</div>
+
+<div id="timePoints" class="row">
+    <div id="timePointsHeader"
+         class="col-md-12 col-sm-12 col-xs-12 col-lg-12"
+         style="height:{{availHeight-260}}px;">
+        <ul id="scrollGrid" class="" style="width:{{timePoints.length*91}}px;">
+            <li ng-repeat="point in timePoints">
+                <ul class="dataRows">
+                    <li style="">{{makeTime()}}</li>
+                    <li ng-repeat="row in dataRows">
+                        <i ng-click="revealHide()"
+                           class="fa fa-circle"
+                           style="color:green"
+                           aria-hidden="true">ROW {{$index}}
+                        </i>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+    </div>
+</div>
+
+<div class="newOuter">
+    <div id="newFieldRow"
+         ng-hide="!hideNew"
+         class="row animate-hide">
+        <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
+        <div class="fields col-md-7 col-sm-7 col-xs-7 col-lg-7">
+            <div>
+                <div id="newField">
+                    <style type="text/css">
+                        .css-form input.ng-invalid.ng-touched {
+                            background-color: #FA787E;
+                        }
+                        .css-form input.ng-valid.ng-touched {
+                            background-color: #78FA89;
+                        }
+                    </style>
+                    <form name="newField" novalidate class="css-form">
+                        <div class="row fieldControls">
+                            <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7">
+                                <h6>Enter Data</h6>
+                            </div>
+                            <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
+                                <ul class="controls">
+                                    <li>
+                                        <i ng-click="revealHide()"
+                                           class="fa fa-trash fa-2x"
+                                           style="color:#D50000;"
+                                           aria-hidden="true"></i>
+                                    </li>
+                                    <li>
+                                        <i ng-click="revealHide()"
+                                           value="Save"
+                                           type="submit"
+                                           class="fa fa-paper-plane fa-2x"
+                                           aria-hidden="true"
+                                           style="color:#4CAF50;"></i>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <ul class="animate-hide data-rows"
+                            style="overflow-y: scroll;height: 900px;"
+                        >
+
+                            <li ng-repeat="form in formElements">
+                                <span class="label"
+                                      style="line-height: 1.7REM;">
+                                    {{form.name}}
+                                </span>
+                                <span class="field">
+                                    <input
+                                            style="
+                                            border:1px solid silver;
+                                            width:95%;
+                                            margin:0 0 5px 0;
+                                            height:1.5REM;"
+                                            type="{{form.type}}" />
+                                    </span>
+                            </li>
+
+
+                        </ul>
+                    </form>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5"></div>
+    </div>
+</div>

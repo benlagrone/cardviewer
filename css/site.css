@@ -68,11 +68,7 @@ body{
     text-transform: capitalize;
     font-size: 1.2REM;
 }
-/*.form-control {*/
-    /*font-family: roboto;*/
-/*}*/
-
-#searchHeader .form-control, #drawerRow .form-control{
+#searchHeader .form-control, #drawerRow .form-control,.magnifyingglass .form-control{
     font-family: "FontAwesome";
     color:white;
 }
@@ -87,7 +83,7 @@ body{
 #newActivityRow > .fields.active,
 #newActivityRow.active .fields,
 #newFieldRow > .fields.active,
-#newFieldRow.active .fields {
+#newFieldRow.active .fields,.newOuter > div > div{
     box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
     background-color:white;
 }
@@ -166,14 +162,6 @@ ul.controls i{
     margin: 20px -2%;
     width: 105%;
 }
-/*#searchFilter input:focus {*/
-    /*color: white;*/
-    /*font-family: roboto;*/
-/*}*/
-/*#searchFilter input{*/
-
-    /*font-family: "FontAwesome"*/
-/*}*/
 .fieldControls {
     padding-top: 6px;
 }
@@ -320,4 +308,57 @@ input#searchFields:-moz-placeholder { /* Firefox 18- */
 }
 #searchFields-wrap {
     padding: 5px 0px 0px 1%
+}
+
+/* Patient Activites page */
+#activitiesHeader{
+    background: #607D8B;
+    color: white;
+    border-width: 1px;
+    cursor: pointer;
+    font-size: 1.5em;
+    margin: -20px auto 1px -15px;
+    width: 105%;
+    transition: background .15s;
+}
+#activitiesHeader select{
+    color:#5d5d5d;
+    margin:10px;
+}
+#activitiesHeader select option {
+    color:silver;
+    background-color:grey;
+}
+.activitySelector{
+    padding-top: 16px;
+}
+.activitySelector li{
+    display:inline;
+}
+#timePointsHeader{
+    overflow-x:scroll;
+
+    white-space: nowrap;
+}
+#timePointsHeader > ul > li{
+    display:inline-block;
+    min-width:87px;
+    border:1px solid silver;
+}
+.dataRows {
+}
+.dataRows li{
+border-top:1px solid silver;
+    padding:1px;
+    background-color:white;
+    min-height:33px;
+}
+#timePointsHeader .dataRows li:first-child{
+    border-bottom: 1px solid silver;
+}
+html.hideOverflow{
+    overflow-y:hidden;
+}
+#titleScroll .title{
+
 }
