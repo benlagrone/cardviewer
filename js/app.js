@@ -890,7 +890,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             devRoot: 'https://gumedonc-dev.mdanderson.edu',
             localRoot: 'http://localhost:56700',
             getPath: function(){
-                var thePath = httpWorker.apiRoot.dev;
+                var thePath = httpWorker.apiRoot.local;
 
                 return thePath;
             }
