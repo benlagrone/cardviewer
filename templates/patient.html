@@ -5,17 +5,30 @@
     </div>
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2" style="padding:7px 20px;">
         <select
-                ng-model="select"
-                ng-options="protocols.id as options.id for options in protocols"
-                class="mdb-select">
+                ng-model="activeProtocol"
+                style="max-width:144px"
 
+                ng-options="options.name as options.name for options in protocols"
+                class="mdb-select">
         </select>
     </div>
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
         <ul class="activitySelector">
-            <li ng-repeat="item in types">
-                <i title="{{item.title}}" class="fa {{item.icon}}" ng-click="function1(item.data)" data="{{item.data}}" aria-hidden="true"></i>
-                <i class="fa fa-id-badge" aria-hidden="true"></i>
+            <li ng-repeat="item in types" class="{{item.hover?'hover':''}}&nbsp;{{item.selected?'selected':''}}">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-square-o fa-stack-2x"></i>
+                    <i
+                            title="{{item.title}}"
+                            class="fa {{item.icon}}"
+                            ng-click="selectType(item)"
+                            ng-mouseover="item.hover=true"
+                            ng-mouseleave="item.hover=false"
+                            data="{{item.data}}"
+                            aria-hidden="true"></i>
+                    <i class="activityLabel">{{item.name}}</i>
+                </span>
+
+
             </li>
         </ul>
     </div>
@@ -36,6 +49,9 @@
             </div>
         </div>
     </div>
+    <div class="col-md-3 col-sm-3 col-xs-3 col-lg-3">
+        <a ng-click="submitSearch()" class="btn btn-success waves-effect waves-light">Submit</a>
+    </div>
 </div>
 
 <div id="timePointsTitle" class="row">
@@ -45,28 +61,55 @@
         <h5 id="titleScroll" style="height:25px;width:{{timePoints.length*timePointsWidth}}px">
             <span style="position:fixed;" class="title">Patient Timepoints</span>
         </h5>
+        <div id="" class="row">
+            <div id="" class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
+            <div id="" class="col-md-10 col-sm-10 col-xs-10 col-lg-10">
+                <ul id="scrollGrid" class="" style="width:{{timePoints.length*91}}px;">
+                    <li ng-repeat="point in timeData.timePointsColumnHeaders">
+                        <span>
+                            <span title="{{point.fullName}}">{{point.fullName}}</span>
+                        </span>
+                    </li>
+                    <ul>
+            </div>
+        </div>
+        
+
     </div>
 </div>
 
 <div id="timePoints" class="row">
+    <div id="activityRowheader" class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
+        <ul ng-if="timeData.activityRowHeaders">
+
+            <li ng-repeat="title in timeData.activityRowHeaders">
+                <span>{{title.name}}</span>
+            </li>
+        </ul>
+    </div>
     <div id="timePointsHeader"
-         class="col-md-12 col-sm-12 col-xs-12 col-lg-12"
+         class="col-md-10 col-sm-10 col-xs-10 col-lg-10"
          style="height:{{availHeight-260}}px;">
         <ul id="scrollGrid" class="" style="width:{{timePoints.length*91}}px;">
-            <li ng-repeat="point in timePoints">
+
+            <li ng-repeat="point in timeData.dataGrid" >
                 <ul class="dataRows">
-                    <li style="">{{makeTime()}}</li>
-                    <li ng-repeat="row in dataRows">
-                        <i ng-click="revealHide()"
-                           class="fa fa-circle"
-                           style="color:green"
-                           aria-hidden="true">ROW {{$index}}
+                    <li ng-repeat="row in point.valueArray"
+                        ng-click="revealHide(row);rowActive(row);"
+                        class="{{row.required?'required':''}} {{row.active?'active':'inactive'}}">
+<div>
+
+                            <i ng-if="row.value"
+                               data="row.activityID"
+                               class="fa {{row.icon}}"
+                               style="color:{{row.color}}"
+                               aria-hidden="true">
                         </i>
+</div>
                     </li>
                 </ul>
             </li>
         </ul>
-
     </div>
 </div>
 
@@ -74,7 +117,7 @@
     <div id="newFieldRow"
          ng-hide="!hideNew"
          class="row animate-hide">
-        <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
+        <div style="opacity:0" class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
         <div class="fields col-md-7 col-sm-7 col-xs-7 col-lg-7">
             <div>
                 <div id="newField">
@@ -85,13 +128,26 @@
                         .css-form input.ng-valid.ng-touched {
                             background-color: #78FA89;
                         }
+                        ul.data-rows {
+                            overflow-y: scroll;
+                            height: 728px;
+                            width: 100%;
+                            display: flex;
+                            flex-wrap: wrap;
+                        }
+                        ul.data-rows li{
+                            width:200px!important;
+                        }
+                        ul.data-rows .label,div ul.data-rows .field{
+                            width:100%!important;
+                        }
                     </style>
                     <form name="newField" novalidate class="css-form">
                         <div class="row fieldControls">
-                            <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7">
-                                <h6>Enter Data</h6>
+                            <div class="col-md-10 col-sm-10 col-xs-10 col-lg-10">
+                                <h6>Enter Data for {{formElements.name}} {{formElements.timePointName?'in':'...'}} {{formElements.timePointName}}</h6>
                             </div>
-                            <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
+                            <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
                                 <ul class="controls">
                                     <li>
                                         <i ng-click="revealHide()"
@@ -112,13 +168,12 @@
                         </div>
 
                         <ul class="animate-hide data-rows"
-                            style="overflow-y: scroll;height:{{availHeight*.7}}px;"
+                            style="overflow-y: {{newFormHeight>=availHeight?'scroll':'hidden'}};height:{{newFormHeight}}px;"
                         >
-
-                            <li ng-repeat="form in formElements">
+                            <li ng-repeat="form in formElements.fields">
                                 <span class="label"
                                       style="line-height: 1.7REM;">
-                                    {{form.name}}
+                                    {{form.fieldName}}
                                 </span>
                                 <span class="field">
                                     <input

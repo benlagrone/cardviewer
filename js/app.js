@@ -579,13 +579,37 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
     .controller('planController',function($scope,httpService){
 
     })
-    .controller('patientController',function($scope,httpService,moment,$window,$timeout){
+    .controller('patientController',function($scope,httpService,moment,$window,$timeout,localStorageService){
+        function getItem(key) {
+            return localStorageService.get(key);
+        }
         $scope.patient = {
             mrn:123456,
             field:"abcdfe"
         };
+        $scope.userId = getItem('userId');
+        $scope.userName = getItem('userName');
+        $scope.activeProtocol = '2014-0386';
+        $scope.floatyActive = false;
+        $scope.patientIDType;
+        $scope.activityStatus = [
+            {id:'complete',name:'Complete',color:'green',icon:'fa-circle'},
+            {id:'completewithvariance',name:'Complete with Variance',color:'yellow',icon:'fa-circle'},
+            {id:'notcomplete',name:'Not Complete',color:'red',icon:'fa-circle'},
+            {id:'pending',name:'Pending',color:'orange',icon:'fa-circle'},
+            {id:'awaitingreview',name:'Awaiting Review',color:'black',icon:'fa-binoculars'},
+            {id:'notspecified',name:'Not Specified',color:'silver',icon:'fa-circle'}
+        ];
+        $scope.protocols = [
+            {id:"1",name:"Fetching Protocol list",icon:"foo"}
+        ];
+        httpService.getData('User/',$scope.userId,'/Protocols').then(function(response){
+            $scope.protocols = response.data;
+        },function errorCallback(response){
+            console.log(response)
+        });
         $scope.formElements = [
-            {name:"Date of Evaluation",type:"text"},
+            {fieldName:"Date of Evaluation",type:"text"},
         {name:"NEUT%",type:"text"},
         {name:"Lymph%",type:"text"},
         {name:"Mono%",type:"text"},
@@ -612,45 +636,66 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         {name:"INRBC (%)",type:"text"},
         {name:"Collected Elsewhere",type:"text"}
         ];
-        $scope.protocols = [
-            {id:"20012-1236"},
-            {id:"20012-1236"},
-            {id:"20012-1236"},
-            {id:"20012-1236"},
-            {id:"20012-1236"},
-            {id:"20012-1236"},
-            {id:"20012-1236"},
-            {id:"20012-1236"}
-        ];
         $scope.types = [
-            {id:"123",name:"Core",title:"Toggle Core",icon:"fa-diamond",action:"function1",data:"data1"},
-            {id:"123",name:"MRN",title:"Toggle MRN",icon:"fa-eye",action:"function2",data:"data2"},
-            {id:"132",name:"SponsorSubjectId",title:"Toggle SponsorSubjectId",icon:"fa-crosshairs",action:"function3",data:"data3"}
+            {id:"AccNo",name:"Session #",title:"Search by Session #",icon:"fa-heartbeat",action:"selectType",data:"data1"},
+            {id:"MRN",name:"MRN",title:"Search by MRN",icon:"fa-medkit",action:"selectType",data:"data2"},
+            {id:"SponsorSubjectId",name:"SponsorSubjectId",title:"Search by SponsorSubjectId",icon:"fa-crosshairs",action:"selectType",data:"data3"}
         ];
-        $scope.function1 = function(data){
-            console.log(data)
+        $scope.selectType = function(data){
+            angular.forEach($scope.types,function(value,index){
+                value.selected=false;
+            });
+            data.selected=true;
+            $scope.patientIDType = data.id;
         };
-        $scope.random = function(x){
-            var number = Math.floor((Math.random() * 100*x) + 1);
-            return number;
-        };
-        $scope.generateTimepoints = function(x){
-            var timePointsArray = [];
-            for(i=0;i<$scope.random(x);i++){
-                var point = {};
-                point.numer = i;
-                timePointsArray.push(point)
-            }
-            return timePointsArray;
+
+        $scope.timeData = {};
+        $scope.submitSearch = function(){
+            httpService.getData('data/patient','?protocol='+$scope.activeProtocol+'&selector='+$scope.patientIDType+'&selectorValue='+$scope.search).then(function(response){
+                $scope.timePoints=response.data.patientTimePoints;
+                $scope.timeData.timePointsColumnHeaders = response.data.patientTimePoints;
+                $scope.timeData.activityRowHeaders = response.data.protocolActivities;
+                $scope.timeData.patientData = response.data.patientDataGroup;
+                $scope.timeData.dataGrid = [];
+                angular.forEach($scope.timeData.timePointsColumnHeaders,function(value,index){
+                    var tempValue = {};
+                    tempValue.head = value;
+                    tempValue.valueArray = [];
+                    angular.forEach($scope.timeData.activityRowHeaders,function(Rvalue,Rindex){
+                        tempRow = {};
+                        tempRow.value = false;
+                        tempRow.active=false;
+                        angular.forEach($scope.timeData.patientData,function(Dvalue,Dindex){
+                            if(Dvalue.patientTimePointId===$scope.timeData.timePointsColumnHeaders[index].id&&Dvalue.activityId===$scope.timeData.activityRowHeaders[Rindex].id)
+                            {
+                                tempRow.timePointName = $scope.timeData.timePointsColumnHeaders[index].fullName;
+                                tempRow.activityId = Dvalue.activityId;
+                                tempRow.value = true;
+                                tempRow.status = Dvalue.status;
+                                tempRow.required = Dvalue.isRequired;
+                                angular.forEach($scope.activityStatus, function(Svalue,Sindex){
+                                    if(Svalue.name.toLowerCase()===tempRow.status.toLowerCase()){
+                                        tempRow.icon=Svalue.icon;
+                                        tempRow.color=Svalue.color;
+                                    }
+                                })
+                            }
+                        });
+                        tempValue.valueArray.push(tempRow);
+                    });
+                    $scope.timeData.dataGrid.push(tempValue)
+                })
+
+            },function errorCallback(response){
+
+            })
         };
         $scope.makeTime = function(){
             var theTime = moment().format('L');
             return theTime;
         };
         $scope.availHeight = window.outerHeight;
-        $scope.timePoints = $scope.generateTimepoints(10);
-        $scope.dataRows = $scope.generateTimepoints(7);
-        $scope.number = $scope.random();
+        $scope.newFormHeight = 60;
         $scope.search;
         $scope.select;
         $scope.timePointsWidth = 91;
@@ -659,41 +704,83 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             right:0
         };
         $scope.hideNew = false;
-        $scope.revealHide = function(){
-            $scope.hideNew=!$scope.hideNew;
-            console.log('open')
-        }
+        $scope.revealHide = function(activity){
+
+            $scope.formElements = [];
+            if(activity){
+                // $scope.formElements.name = '...';
+                $scope.hideNew = true;
+                var path=activity.color==='silver'?'Data/Activity/':'Data/Activity/';
+                httpService.getData(path,activity.activityId).then(function(response){
+                console.log(response.data)
+                    $scope.formElements=response.data;
+                    $scope.formElements.timePointName = activity.timePointName;
+                    var formLineHeight = 50;
+                    var minformHeight = $scope.formElements.fields.length*formLineHeight<=60?100:$scope.formElements.fields.length*formLineHeight;
+                    $scope.newFormHeight = $scope.formElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
+                },function errorCallback(response){
+                })
+            } else {
+                console.log('else');
+                $scope.hideNew = false;
+                $scope.loop($scope.callbackRemoveActive);
+            }
+        };
+        $scope.rowActive = function(row){
+            $scope.loop($scope.callbackRemoveActive);
+            row.active=true;
+        };
+        $scope.callbackRemoveActive = function(value){
+            value.active=false;
+    };
+        $scope.loop = function(callback){
+            angular.forEach($scope.timeData.dataGrid,function(value,index){
+
+                angular.forEach($scope.timeData.dataGrid[index].valueArray,function(Rvalue,Rindex) {
+                    callback(Rvalue)
+                })
+            })
+        };
         $scope.fooElement = document.getElementById('scrollMe');
         $scope.fooElement2 = document.getElementById('timePointsHeader');
         $scope.grid = document.getElementById('scrollGrid');
-        $scope.foo = 'relative'
         $scope.fixMe = function(){
             console.log('bar')
             return $scope.foo
-        }
+        };
         angular.element($scope.fooElement).bind("scroll",function(){
             $scope.fooElement2.left=$scope.gridPos.left;
-        })
+        });
         angular.element($scope.fooElement2).bind("scroll",function(){
             var docLeft = $("#timePointsHeader").scrollLeft()-3;
             var docTop = $("#timePointsHeader").scrollTop();
             if ($scope.gridPos.left !== docLeft){
-                $scope.startScroll(docLeft,docTop)
+                // $scope.startScroll(docLeft,docTop)
             }
             $timeout.cancel(timer);
             var timer = $timeout(function(){
-                $scope.stopScroll(docLeft,docTop);
+                // $scope.stopScroll(docLeft,docTop);
             },100);
         });
-        $scope.startScroll = function(left,top){
-            $('.dataRows li:first-child').css('position','absolute')
-            $('.dataRows li:first-child').css('top',top)
-        };
-        $scope.stopScroll = function(left,top){
-            $('.dataRows li:first-child').css('position','relative')
-             $('.dataRows li:first-child').css('top',top);
-        };
-        $('html').addClass('hideOverflow')
+        // $scope.startScroll = function(left,top){
+        //     $('.dataRows li:first-child').css('position','absolute');
+        //     $('.dataRows li:first-child').css('top',top);
+        //     $('#scrollGrid > li:first-child').css('position','absolute');
+        //     $('#scrollGrid > li:first-child').css('left',left);
+        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('position','fixed');
+        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('left','0');
+        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('top','200px');
+        // };
+        // $scope.stopScroll = function(left,top){
+        //     $('.dataRows li:first-child').css('position','relative');
+        //      $('.dataRows li:first-child').css('top',top);
+        //     $('#scrollGrid > li:first-child').css('position','relative');
+        //     $('#scrollGrid > li:first-child').css('left',left);
+        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('position','fixed');
+        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('left','0');
+        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('top','200px');
+        // };
+        $('html').addClass('hideOverflow');
         $(function(){
             $("#scrollMe").scroll(function(){
                 $("#timePointsHeader")
@@ -705,7 +792,6 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             });
         });
         console.log($scope)
-
     })
     .controller('protocolController',function($scope,httpService){
 
