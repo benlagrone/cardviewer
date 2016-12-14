@@ -6,11 +6,14 @@ var Schema       = mongoose.Schema;
 var AssessmentSchema   = new Schema({
     name: String,
     group:String,
-    author:String,
-    questions:[{
+    author:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'Question'
-    }]
+        ref:'User'
+    }],,
+    target:String,
+    description:String,
+    active:Boolean,
+    creationDate:Date
 });
 
 module.exports = mongoose.model('Assessment', AssessmentSchema);

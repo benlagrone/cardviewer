@@ -11,10 +11,13 @@ var port = process.env.port || 8080;
 
 var router = express.Router();
 
-var QuestionLibrary = require('./models/questionlibrary');
-var Question = require('./models/question');
-var User = require('./models/user');
 var Role = require('./models/role');
+var Roles = require('./models/sampleData/roles');
+var User = require('./models/user');
+var Users = require('./models/sampleData/users');
+var Question = require('./models/question');
+var Questions = require('./models/sampleData/questions');
+var QuestionLibrary = require('./models/questionlibrary');
 router.use(function(req,res,next){
     console.log('something foobar');
     next();

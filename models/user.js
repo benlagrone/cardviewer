@@ -10,7 +10,7 @@ var UserSchema   = new Schema({
         ref:'Role'
     }],
     active:Boolean,
-    creationDate:Date,
+    creationDate:Date
 });
 
 module.exports = mongoose.model('User', UserSchema);
