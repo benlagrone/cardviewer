@@ -12,6 +12,11 @@ var AssessmentBuildSchema   = new Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Question'
     }],
+    ordinal:int,
+    parent:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Question'
+    }],
     child:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Question'
