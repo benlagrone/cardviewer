@@ -64,13 +64,22 @@
                     </div>
                     <div class="col-md-3 col-sm-3 col-xs-3 col-lg-3">
                         <ul class="controls" ng-hide="items.hide">
+                            <li ng-if="enableFeature.activityPreview" ng-hide="items.hide">
+                                <span class="edit-copy fa-stack fa-lg">
+                                    <i class="fa fa-square fa-stack-2x"></i>
+                                    <i title="Preview this Form"
+                                       ng-click="showPreview(items)"
+                                       class="fa fa-eye fa-stack-1x"
+                                       style="color:white;"></i>
+                                </span>
+                            </li>
                             <li ng-if="enableFeature.copyActivity">
                                 <span class="edit-copy fa-stack fa-lg">
                                     <i class="fa fa-square fa-stack-2x"></i>
                                     <i title="Copy this Activity"
-                                            ng-click="addNewActivity(items)"
-                                            class="fa fa-files-o fa-stack-1x"
-                                            style="color:white;"></i>
+                                       ng-click="addNewActivity(items)"
+                                       class="fa fa-files-o fa-stack-1x"
+                                       style="color:white;"></i>
                                 </span>
                             </li>
                             <li ng-hide="items.hide">
@@ -100,6 +109,8 @@
                                    class="fa fa-paper-plane fa-2x"
                                    aria-hidden="true" style="color:#4CAF50;"></i>
                             </li>
+
+
                         </ul>
                     </div>
                 </div>
@@ -156,11 +167,11 @@
                         </span>
                         <ul>
                             <li
-                                class="activityFields"
-                                ng-repeat="field in items.fields"
-                                style="float:left"
-                                ng-class="{'last':$last}"
-                                {{field.ordinal=$index}}>
+                                    class="activityFields"
+                                    ng-repeat="field in items.fields"
+                                    style="float:left"
+                                    ng-class="{'last':$last}"
+                                    {{field.ordinal=$index}}>
                                 <span>
                                     &nbsp;{{$index+1}}:
                                     <a ng-click="showFieldInDrawer(field.fieldName)">{{field.fieldName}}</a>
@@ -199,7 +210,7 @@
                     ng-hide="items.hide">
                     <li>
                         <span class="label">fields</span>
-                        <span  ng-if="items.edit">
+                        <span ng-if="items.edit">
                             <a ng-click="addAFieldToActivity(items);toggleFieldsLabel($event,items);"
                                data="open"
                                title="Open the Available Fields Drawer"
@@ -251,7 +262,7 @@
      ng-hide="hideNewActivity"
      class="row animate-hide {{hideNewActivity!=false?'':'active'}}">
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
-    <div class="fields col-md-5 col-sm-5 col-xs-5 col-lg-5">
+    <div class="fields col-md-8 col-sm-8 col-xs-8 col-lg-8">
         <div>
             <div id="newActivity">
                 <style type="text/css">
@@ -266,27 +277,38 @@
                 <form name="newActivity" novalidate class="css-form">
                     <div class="row fieldControls">
                         <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7">
-                            <h6>New Activity</h6>
+                            <h6 ng-if="addNewList">New Activity</h6>
+                            <h6 ng-if="!addNewList">Preview {{previewFormElements.name}} Form</h6>
                         </div>
                         <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
                             <ul class="controls">
-                                <li>
+                                <li ng-if="addNewList">
                                     <i ng-click="clearNewActivity(newActivity)"
-                                       class="fa fa-trash fa-2x" style="color:#D50000;"
+                                       title="Cancel Activity"
+                                       class="fa fa-trash fa-2x"
+                                       style="color:#D50000;"
                                        aria-hidden="true"></i>
                                 </li>
-                                <li>
+                                <li ng-if="addNewList">
                                     <i ng-click="postNewActivity(newActivity)"
+                                       title="Save Activity"
                                        value="Save"
                                        type="submit"
                                        class="fa fa-paper-plane fa-2x"
                                        aria-hidden="true"
                                        style="color:#4CAF50;"></i>
                                 </li>
+
+                                <li ng-if="!addNewList">
+                                    <i ng-click="showPreview()"
+                                       title="Close Preview"
+                                       class="fa fa-eye-slash fa-2x" style="color:#D50000;"
+                                       aria-hidden="true"></i>
+                                </li>
                             </ul>
                         </div>
                     </div>
-                    <ul class="animate-hide data-rows">
+                    <ul ng-show="addNewList" class="animate-hide data-rows">
                         <li>
                             <label class="label">name</label>
                             <span class="field">
@@ -361,11 +383,154 @@
                             </ul>
                         </li>
                     </ul>
+
+                    <style>
+                         ul#preview.data-rows {
+                            overflow-y: scroll;
+                            height: 728px;
+                            width: 100%;
+                            display: flex;
+                            flex-wrap: wrap;
+                        }
+                         ul#preview.data-rows li {
+                            width: 200px !important;
+                        }
+                         ul#previewl.data-rows .label, div ul.data-rows .field {
+                            width: 100% !important;
+                        }
+                        .labvalue{
+width:27%;float:left;
+                        }
+                        .childList{
+                            margin-left:1%;
+                        }
+                        .previewRow{
+                            clear: both;
+                        }
+                        li.previewRow.Group{
+                            width: 100%!important;
+
+                        }
+                         li.previewRow.Group > div > ul{
+                             display: flex;
+                             flex-wrap: wrap;
+                         }
+                         li.previewRow.Group select{
+                             width:95%;
+                         }
+                    </style>
+
+                    <ul id="preview"
+                        ng-hide="addNewList"
+                        ng-if="previewFormElements.fields.length>0"
+                        class="animate-hide data-rows"
+                        style="overflow-y: {{oldHeight>=availHeight?'scroll':'hidden'}};height:{{newFormHeight>=availHeight?availHeight*85:newFormHeight}}px;max-height:85%;"
+                    >
+                        <li ng-repeat="form in previewFormElements.fields"
+                            class="previewRow {{form.fieldDataType}}"
+                            style="{{form.fieldDataType==='Group'?'width: 100%!important;':''}}
+                            {{form.fieldDataType==='LabValue'?'width:60%!important;':''}}
+">
+                            <div ng-repeat="inputField in form.formElements.fieldArray"
+                                 class="{{inputField.type==='hidden'?'select':inputField.type}} {{inputField.cat}} {{inputField.name}}">
+                                <span ng-if="inputField.cat!='boolean'" class="label"
+                                      style="line-height: 1.7REM;">
+                                     {{inputField.label}}
+                                </span>
+                                <span class="field ">
+                                    <input
+                                            style="
+                                            border:1px solid silver;
+                                            width:95%;
+                                            margin:0 0 5px 0;
+                                            height:1.5REM;"
+                                            type="{{inputField.type}}"
+                                            placeholder="{{inputField.placeholder}}"
+                                    />
+                                    </span>
+                                <span ng-if="inputField.cat==='boolean'" class="form-group">
+                                    <input
+                                        ng-model=""
+                                        placeholder="{{inputField.placeholder}}"
+                                        type="checkbox"
+                                        id="{{inputField.name}}"
+                                        class="">
+                                    <label for="{{inputField.name}}">{{inputField.cat!='labvalue'?inputField.name:inputField.label}}</label>
+                                </span>
+                                <ul class="childList"
+                                    ng-if="inputField.children.forms.length>0">
+                                    <li ng-repeat="childField in inputField.children.forms">
+                                        <div ng-repeat="childInputField in childField.fieldArray"
+                                             class="childField {{childInputField.type}} {{childInputField.cat}}">
+                                            <span class="label"
+                                                style="line-height: 1.2REM;">
+                                                <i class="fa fa-level-up fa-rotate-90 "
+                                                   aria-hidden="true">
+
+                                                </i>
+                                                {{childInputField.cat!='labvalue'?childInputField.name:childInputField.label}}
+                                            </span>
+                                            <span class="field">
+                                                <select
+                                                               ng-if="childInputField.cat==='select'"
+                                                               ng-options="option as option.name for option in childInputField.options"
+                                                               ng-model="selected"
+                                                ></select>
+                                                <input ng-if="childInputField.cat==='text'"
+                                                       name="{{childInputField.name}}"
+                                                       placeholder="{{childInputField.placeholder}}"
+                                                       style="
+                                                        border:1px solid silver;
+                                                        width:95%;
+                                                        margin:0 0 5px 0;
+                                                        height:1.5REM;"
+                                                        type="{{childInputField.type}}"/>
+                                                <div ng-if="childInputField.cat==='labvalue'">
+
+                                               <input ng-if="childInputField.cat==='labvalue'"
+                                                      placeholder="{{childInputField.placeholder}}"
+                                                      name="{{childInputField.name}}"
+                                                      style="
+                                                                                    border:1px solid silver;
+                                                                                    width:95%;
+                                                                                    margin:0 0 5px 0;
+                                                                                    height:1.5REM;"
+                                                      type="{{childInputField.type}}"/>
+
+
+                        <span ng-if="childInputField.cat==='boolean'" class="form-group">
+                            <input
+                                    ng-model=""
+                                    type="checkbox"
+                                    id="{{childInputField.name}}"
+                                    class="">
+                            <label for="{{childInputField.name}}">{{childInputField.cat!='labvalue'?childInputField.name:childInputField.label}}</label>
+                        </span>
+
+
+                                                </div>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <ul ng-if="previewFormElements.fields.length<1" class="animate-hide data-rows"
+                        style="overflow-y: {{newFormHeight>=availHeight?'scroll':'hidden'}};height:{{newFormHeight}}px;"
+                    >
+                        <li>
+                            <h7>This Activity has no Fields</h7>
+                        </li>
+                    </ul>
+                    </ul>
+
                 </form>
             </div>
         </div>
     </div>
-    <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5"></div>
+    <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
 </div>
 
 <div id="addActivityRow"
@@ -471,12 +636,12 @@
                            ng-if="!items.block"
                            ng-show="items.showIncluded;"></i>
                         <!--<i title="This Field can not be added"-->
-                                <!--class="fa fa-ban"-->
-                           <!--aria-hidden="true"-->
-                           <!--ng-click=""-->
-                           <!--data=""-->
-                           <!--style="color:orange;"-->
-                           <!--ng-show="items.block"></i>-->
+                        <!--class="fa fa-ban"-->
+                        <!--aria-hidden="true"-->
+                        <!--ng-click=""-->
+                        <!--data=""-->
+                        <!--style="color:orange;"-->
+                        <!--ng-show="items.block"></i>-->
                     </div>
                     <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7" ng-show="workingActivity!=undefined">
                         <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
@@ -487,7 +652,7 @@
                     </div>
                     <div class="col-md-4 col-sm-4 col-xs-4 col-lg-4">
                         <ul class="controls" ng-hide="items.hide">
-                            <li ng-if="enableFeature.copyField" >
+                            <li ng-if="enableFeature.copyField">
                                 <span class="edit-copy fa-stack fa-lg">
                                     <i class="fa fa-square fa-stack-2x"></i>
                                     <i title="Copy this Activity"
@@ -497,7 +662,8 @@
                                 </span>
                             </li>
                             <li ng-hide="items.hide">
-                                <i ng-click="openEditField(items);items.edit=!items.edit" class="fa fa-pencil-square fa-2x"
+                                <i ng-click="openEditField(items);items.edit=!items.edit"
+                                   class="fa fa-pencil-square fa-2x"
                                    aria-hidden="true"></i>
                             </li>
                             <li ng-hide="items.hide">
@@ -669,8 +835,8 @@
                             </span>
                         </li>
                         <li>
-                        <span class="label">Data Type</span>
-                        <span ng-hide="items.edit" class="field">
+                            <span class="label">Data Type</span>
+                            <span ng-hide="items.edit" class="field">
                             <select
                                     ng-model="newData.field.fieldDataType"
                                     ng-options="options.id as options.name for options in dataTypesList">
@@ -690,15 +856,15 @@
                                     </i>
                                 </a>
                                 <!--<a title="Close the Available Fields Drawer"-->
-                                   <!--ng-click="showDrawerClose();clearWorkingActivity()"-->
-                                   <!--ng-hide="hideDrawer">-->
-                                    <!--Done Editing-->
-                                    <!--<i class="fa fa-arrow-circle-right"-->
-                                       <!--ng-mouseleave=""-->
-                                       <!--ng-mouseover=""-->
-                                       <!--aria-hidden="true"-->
-                                       <!--style="">-->
-                                    <!--</i>-->
+                                <!--ng-click="showDrawerClose();clearWorkingActivity()"-->
+                                <!--ng-hide="hideDrawer">-->
+                                <!--Done Editing-->
+                                <!--<i class="fa fa-arrow-circle-right"-->
+                                <!--ng-mouseleave=""-->
+                                <!--ng-mouseover=""-->
+                                <!--aria-hidden="true"-->
+                                <!--style="">-->
+                                <!--</i>-->
                                 <!--</a>-->
                         </span>
                             <ul>

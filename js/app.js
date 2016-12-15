@@ -26,7 +26,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             })
         }
     })
-    .controller('configureController',function($timeout,$scope,httpService,localStorageService,moment){
+    .controller('configureController',function($timeout,$scope,httpService,localStorageService,moment,buildFormService){
         function getItem(key) {
             return localStorageService.get(key);
         }
@@ -37,11 +37,15 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             addField : true,
             copyField:true,
             //TODO enable drag sort
-            dragFieldSort:false
+            dragFieldSort:false,
+            activityPreview:true
         };
         $scope.makeTime = {
             time:moment().format('L')
         };
+        $scope.availHeight = window.outerHeight;
+        $scope.newFormHeight = 100;
+        $scope.previewFormElements = [];
         $scope.userId = getItem('userId');
         $scope.userName = getItem('userName');
         $scope.departmentNiceName = getItem('departmentNiceName');
@@ -84,6 +88,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         $scope.addFieldstoActivityTitle;
         $scope.workingActivity;
         $scope.workingField;
+        $scope.addNewList=true;
         $scope.addMouseOver = function(){
             $scope.addSymbol = 'fa-pencil-square';
         };
@@ -398,12 +403,12 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             })
         };
         $scope.addAFieldToActivity = function(activity){
-            console.log(activity.fields)
+            // console.log(activity.fields)
             $scope.workingActivity = activity;
             $scope.hideDrawer = false;
             $scope.addFieldstoActivityTitle = activity.name;
             angular.forEach($scope.fields,function(value,index){
-                console.log(value)
+                // console.log(value)
                 $scope.fields[index].showIncluded = false;
                 angular.forEach(activity.fields,function(value2,index2){
                     if(value2.fieldId===value.fieldId){
@@ -507,6 +512,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         };
         $scope.addNewActivity = function(activity){
             $scope.hideNewActivity=!$scope.hideNewActivity;
+            $scope.addNewList=true;
             if(!$scope.hideNewActivity){
                 var newData = {
                     edit:true,
@@ -574,12 +580,62 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 }
             })
         };
+        $scope.formBuilder;
+        $scope.showPreview = function(activity){
+            // $scope.hideNewActivity=!$scope.hideNewActivity;
+            $scope.addNewList=false;
+            $scope.previewFormElements = [];
+
+            if(activity){
+                angular.forEach(activity.fields,function(value,index){
+                    if(value.fieldDataType){
+                    }else {
+                        angular.forEach($scope.fields,function(Fvalue,Findex){
+                            if(value.fieldId===Fvalue.id){
+                                value.instructions=Fvalue.instructions;
+                                value.fieldDataTypeId=Fvalue.fieldDataTypeId;
+                                value.fieldDataType=Fvalue.fieldDataType;
+                                value.listId=Fvalue.listId;
+                                value.fieldParentId=Fvalue.fieldParentId;
+                                value.isMasterField=Fvalue.isMasterField;
+                                value.canBeAutomated=Fvalue.canBeAutomated;
+                                value.categoryId=Fvalue.categoryId;
+                                value.categoryName=Fvalue.categoryName;
+                                value.createdById=Fvalue.createdById;
+                                value.createdDate=Fvalue.createdDate;
+                                value.modifiedById=Fvalue.modifiedById;
+                                value.modifiedDate=Fvalue.modifiedDate;
+                            }
+                        });
+                    }
+                    value.formElements = buildFormService.getFormType(value)
+                });
+                $scope.hideNewActivity=false;
+                $scope.previewFormElements=activity;
+                var formLineHeight = 90;
+                var minformHeight = $scope.previewFormElements.fields.length*formLineHeight<=60?100:$scope.previewFormElements.fields.length*formLineHeight;
+                $scope.newFormHeight = $scope.previewFormElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
+                var childHeight;
+                angular.forEach($scope.previewFormElements.fields,function(Pvalue,Pindex){
+                    if(Pvalue.childFields.length>0){
+                        angular.forEach(Pvalue.childFields,function(Cvalue,Cindex){
+                            $scope.newFormHeight += formLineHeight;
+                        })
+                    }
+                });
+                $scope.oldHeight = angular.copy($scope.newFormHeight);
+                $scope.newFormHeight = $scope.newFormHeight>window.outerHeight?window.outerHeight*.8:$scope.newFormHeight;
+            } else{
+                $scope.addNewList=false;
+                $scope.hideNewActivity=true;
+            }
+        };
         console.log($scope)
     })
     .controller('planController',function($scope,httpService){
 
     })
-    .controller('patientController',function($scope,httpService,moment,$window,$timeout,localStorageService){
+    .controller('patientController',function($scope,httpService,moment,$window,$timeout,localStorageService,buildFormService){
         function getItem(key) {
             return localStorageService.get(key);
         }
@@ -648,7 +704,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             data.selected=true;
             $scope.patientIDType = data.id;
         };
-
+        $scope.formData = {};
         $scope.timeData = {};
         $scope.submitSearch = function(){
             httpService.getData('data/patient','?protocol='+$scope.activeProtocol+'&selector='+$scope.patientIDType+'&selectorValue='+$scope.search).then(function(response){
@@ -670,6 +726,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                             {
                                 tempRow.timePointName = $scope.timeData.timePointsColumnHeaders[index].fullName;
                                 tempRow.activityId = Dvalue.activityId;
+                                tempRow.patientActivityId = Dvalue.patientActivityId;
                                 tempRow.value = true;
                                 tempRow.status = Dvalue.status;
                                 tempRow.required = Dvalue.isRequired;
@@ -690,6 +747,12 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
 
             })
         };
+        $scope.postData = function(activity){
+            console.log($scope.formData)
+        };
+        $scope.putData = function(activity){
+            console.log($scope.formData)
+        };
         $scope.makeTime = function(){
             var theTime = moment().format('L');
             return theTime;
@@ -704,22 +767,71 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             right:0
         };
         $scope.hideNew = false;
+        $scope.previewFormElements;
         $scope.revealHide = function(activity){
-
             $scope.formElements = [];
             if(activity){
-                // $scope.formElements.name = '...';
+                console.log(activity)
+                $scope.previewFormElements = activity;
+                var pathVar=activity.patientActivityId!='00000000-0000-0000-0000-000000000000'?'/Data/Patient/PatientActivity/':'/Data/Patient/PatientActivity/Activity/';
+                var idVar=activity.patientActivityId!='00000000-0000-0000-0000-000000000000'?activity.patientActivityId:activity.activityId;
+                    httpService.getData(pathVar,idVar).then(function(response){
+                        console.log(response.data)
+                        if(response.data.fields.length>0){
+                            // angular.forEach()
+                            // angular.copy(response.data.fields,activity.fields);
+                            activity.fields=response.data.fields
+                            angular.forEach(activity.fields,function(value,index){
+                                value.label=value.fieldName;
+                                value.name=value.fieldName;
+                                value.childFields = value.children;
+                                console.log(value)
+                                angular.forEach(value.childFields,function(Cvalue,Cindex){
+                                    Cvalue.label = Cvalue.fieldName;
+                                    Cvalue.name = Cvalue.fieldName
+                                });
+                                if(value.fieldDataType){
+                                }else {
+                                    angular.forEach($scope.fields,function(Fvalue,Findex){
+                                        if(value.fieldId===Fvalue.id){
+                                            value.instructions=Fvalue.instructions;
+                                            value.fieldDataTypeId=Fvalue.fieldDataTypeId;
+                                            value.fieldDataType=Fvalue.fieldDataType;
+                                            value.listId=Fvalue.listId;
+                                            value.fieldParentId=Fvalue.fieldParentId;
+                                            value.isMasterField=Fvalue.isMasterField;
+                                            value.canBeAutomated=Fvalue.canBeAutomated;
+                                            value.categoryId=Fvalue.categoryId;
+                                            value.categoryName=Fvalue.categoryName;
+                                            value.createdById=Fvalue.createdById;
+                                            value.createdDate=Fvalue.createdDate;
+                                            value.modifiedById=Fvalue.modifiedById;
+                                            value.modifiedDate=Fvalue.modifiedDate;
+                                        }
+                                    });
+                                }
+
+                                value.formElements = buildFormService.getFormType(value)
+                            });
+
+                            var formLineHeight = 90;
+                            var minformHeight = $scope.previewFormElements.fields.length*formLineHeight<=60?100:$scope.previewFormElements.fields.length*formLineHeight;
+                            $scope.newFormHeight = $scope.previewFormElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
+                            var childHeight;
+                            console.log($scope.previewFormElements.fields)
+                            angular.forEach($scope.previewFormElements.fields,function(Pvalue,Pindex){
+                                if(Pvalue.children.length>0){
+                                    angular.forEach(Pvalue.children,function(Cvalue,Cindex){
+                                        $scope.newFormHeight += formLineHeight;
+                                    })
+                                }
+                            });
+                            $scope.oldHeight = angular.copy($scope.newFormHeight);
+                            $scope.newFormHeight = $scope.newFormHeight>window.outerHeight?window.outerHeight*.8:$scope.newFormHeight;
+                        }
+                    },function errorCallback(response){
+                    });
                 $scope.hideNew = true;
-                var path=activity.color==='silver'?'Data/Activity/':'Data/Activity/';
-                httpService.getData(path,activity.activityId).then(function(response){
-                console.log(response.data)
-                    $scope.formElements=response.data;
-                    $scope.formElements.timePointName = activity.timePointName;
-                    var formLineHeight = 50;
-                    var minformHeight = $scope.formElements.fields.length*formLineHeight<=60?100:$scope.formElements.fields.length*formLineHeight;
-                    $scope.newFormHeight = $scope.formElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
-                },function errorCallback(response){
-                })
             } else {
                 console.log('else');
                 $scope.hideNew = false;
@@ -762,24 +874,6 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 // $scope.stopScroll(docLeft,docTop);
             },100);
         });
-        // $scope.startScroll = function(left,top){
-        //     $('.dataRows li:first-child').css('position','absolute');
-        //     $('.dataRows li:first-child').css('top',top);
-        //     $('#scrollGrid > li:first-child').css('position','absolute');
-        //     $('#scrollGrid > li:first-child').css('left',left);
-        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('position','fixed');
-        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('left','0');
-        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('top','200px');
-        // };
-        // $scope.stopScroll = function(left,top){
-        //     $('.dataRows li:first-child').css('position','relative');
-        //      $('.dataRows li:first-child').css('top',top);
-        //     $('#scrollGrid > li:first-child').css('position','relative');
-        //     $('#scrollGrid > li:first-child').css('left',left);
-        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('position','fixed');
-        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('left','0');
-        //     $('li:first-child > ul.dataRows:first-child > li:first-child').css('top','200px');
-        // };
         $('html').addClass('hideOverflow');
         $(function(){
             $("#scrollMe").scroll(function(){
@@ -844,6 +938,115 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 });
             }
         };
+    })
+    .service('buildFormService',function(httpService){
+        var typeWorker = {};
+        typeWorker.getFormType = function(field){
+            var fieldObject = {}
+            // fieldObject.fieldDataType = field.fieldDataType.toLowerCase();
+            fieldObject.fieldArray = [];
+            console.log(field)
+            switch(field.fieldDataType.toLowerCase()){
+                case 'list':
+                    fieldObject.fieldArray[0] = {
+                        cat:'select',
+                        type:'select',
+                        options:[]
+                    };
+                    httpService.getData('/list/all').then(function(response){
+                        fieldObject.fieldArray[0].options = response.data;
+                    },function errorCallback(response){
+                    });
+                    break;
+                case 'yes/no':
+                    fieldObject.fieldArray[0] = {
+                        cat:'radio',
+                        type:'radio',
+                        placeholder:'',
+                        options:[{id:'yes',name:'yes'},{id:'no',name:'no'}]
+                    };
+                    break;
+                case 'datetime':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        placeholder:'date',
+                        type:'date'
+                    };
+                    break;
+                case 'float':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        placeholder:'float',
+                        type:'number'
+                    };
+                    break;
+                case 'int':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        placeholder:'int',
+                        type:'number'
+                    };
+                    break;
+                case 'group':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        placeholder:'',
+                        type:'hidden',
+                        children:typeWorker.loopChildFields(field.childFields,typeWorker.getFormType)
+                    };
+                    break;
+                case 'boolean':
+                    fieldObject.fieldArray[0] = {
+                        cat:'boolean',
+                        type:'checkbox'
+                    };
+                    break;
+                case 'labvalue':
+                    fieldObject.fieldArray[0] = {
+                        label:'value',
+                        placeholder:'int',
+                        cat:'labvalue',
+                        type:'number'
+                    };
+                    fieldObject.fieldArray[1] = {
+                        label:'unit',
+                        placeholder:'text',
+                        cat:'labvalue',
+                        type:'text'
+                    };
+                    fieldObject.fieldArray[2] = {
+                        label:'range',
+                        placeholder:'number range',
+                        cat:'labvalue',
+                        type:'text',
+                        minMax:[0,10]
+                    };
+                    break;
+                case 'string':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        type:'text'
+                    };
+                    break;
+                default:
+            }
+
+            fieldObject.fieldArray[0].label = field.label||field.name;
+            fieldObject.fieldArray[0].name = field.name;
+            return fieldObject;
+        };
+        typeWorker.somethingCallback=function(field){
+            typeworker.getFormType(field)
+        };
+        typeWorker.loopChildFields=function(children,callBack){
+            var childFormObject = {}
+            childFormObject.forms = [];
+            angular.forEach(children,function(value,index){
+                childFormObject.forms.push(callBack(value))
+            })
+            return childFormObject;
+        };
+        return typeWorker;
     })
     .service('logoutService',function($cookies,$location){
         var logoutWorker = {}
