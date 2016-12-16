@@ -1,12 +1,12 @@
 {
-  "name": "data",
+  "name": "talentmgr",
   "description": "",
   "main": "index.js",
   "authors": [
-    "Prometheus Team"
+    "Benjamin LaGrone"
   ],
   "license": "ISC",
-  "homepage": "",
+  "homepage": "https://github.com/benlagrone/cardviewer",
   "private": true,
   "ignore": [
     "**/.*",
