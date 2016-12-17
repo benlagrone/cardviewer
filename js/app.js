@@ -26,7 +26,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             })
         }
     })
-    .controller('configureController',function($timeout,$scope,httpService,localStorageService,moment){
+    .controller('configureController',function($timeout,$scope,httpService,localStorageService,moment,buildFormService){
         function getItem(key) {
             return localStorageService.get(key);
         }
@@ -37,11 +37,15 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             addField : true,
             copyField:true,
             //TODO enable drag sort
-            dragFieldSort:false
+            dragFieldSort:false,
+            activityPreview:true
         };
         $scope.makeTime = {
             time:moment().format('L')
         };
+        $scope.availHeight = window.outerHeight;
+        $scope.newFormHeight = 100;
+        $scope.previewFormElements = [];
         $scope.userId = getItem('userId');
         $scope.userName = getItem('userName');
         $scope.departmentNiceName = getItem('departmentNiceName');
@@ -84,10 +88,25 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         $scope.addFieldstoActivityTitle;
         $scope.workingActivity;
         $scope.workingField;
+        $scope.addNewList=true;
         $scope.addMouseOver = function(){
             $scope.addSymbol = 'fa-pencil-square';
         };
         $scope.searchFields;
+        $scope.removeItem = function(item){
+            console.log(item)
+            angular.forEach($scope.fields,function(value,index){
+                if(value.fieldId===item.fieldId){
+                    $scope.fields.splice(index,1);
+                    // httpService.deleteData('Data/Fields',).then(response){
+                    //     console.log(response)
+                    // },function errorCallback(response){
+                    //     console.log(response)
+                    // });
+                    // return;
+                }
+            })
+        };
         $scope.addMouseLeave = function(){
             $scope.addSymbol = 'fa-plus-square';
         };
@@ -384,12 +403,12 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             })
         };
         $scope.addAFieldToActivity = function(activity){
-            console.log(activity.fields)
+            // console.log(activity.fields)
             $scope.workingActivity = activity;
             $scope.hideDrawer = false;
             $scope.addFieldstoActivityTitle = activity.name;
             angular.forEach($scope.fields,function(value,index){
-                console.log(value)
+                // console.log(value)
                 $scope.fields[index].showIncluded = false;
                 angular.forEach(activity.fields,function(value2,index2){
                     if(value2.fieldId===value.fieldId){
@@ -493,6 +512,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         };
         $scope.addNewActivity = function(activity){
             $scope.hideNewActivity=!$scope.hideNewActivity;
+            $scope.addNewList=true;
             if(!$scope.hideNewActivity){
                 var newData = {
                     edit:true,
@@ -560,13 +580,312 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 }
             })
         };
+        $scope.formBuilder;
+        $scope.showPreview = function(activity){
+            // $scope.hideNewActivity=!$scope.hideNewActivity;
+            $scope.addNewList=false;
+            $scope.previewFormElements = [];
+
+            if(activity){
+                angular.forEach(activity.fields,function(value,index){
+                    if(value.fieldDataType){
+                    }else {
+                        angular.forEach($scope.fields,function(Fvalue,Findex){
+                            if(value.fieldId===Fvalue.id){
+                                value.instructions=Fvalue.instructions;
+                                value.fieldDataTypeId=Fvalue.fieldDataTypeId;
+                                value.fieldDataType=Fvalue.fieldDataType;
+                                value.listId=Fvalue.listId;
+                                value.fieldParentId=Fvalue.fieldParentId;
+                                value.isMasterField=Fvalue.isMasterField;
+                                value.canBeAutomated=Fvalue.canBeAutomated;
+                                value.categoryId=Fvalue.categoryId;
+                                value.categoryName=Fvalue.categoryName;
+                                value.createdById=Fvalue.createdById;
+                                value.createdDate=Fvalue.createdDate;
+                                value.modifiedById=Fvalue.modifiedById;
+                                value.modifiedDate=Fvalue.modifiedDate;
+                            }
+                        });
+                    }
+                    value.formElements = buildFormService.getFormType(value)
+                });
+                $scope.hideNewActivity=false;
+                $scope.previewFormElements=activity;
+                var formLineHeight = 90;
+                var minformHeight = $scope.previewFormElements.fields.length*formLineHeight<=60?100:$scope.previewFormElements.fields.length*formLineHeight;
+                $scope.newFormHeight = $scope.previewFormElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
+                var childHeight;
+                angular.forEach($scope.previewFormElements.fields,function(Pvalue,Pindex){
+                    if(Pvalue.childFields.length>0){
+                        angular.forEach(Pvalue.childFields,function(Cvalue,Cindex){
+                            $scope.newFormHeight += formLineHeight;
+                        })
+                    }
+                });
+                $scope.oldHeight = angular.copy($scope.newFormHeight);
+                $scope.newFormHeight = $scope.newFormHeight>window.outerHeight?window.outerHeight*.8:$scope.newFormHeight;
+            } else{
+                $scope.addNewList=false;
+                $scope.hideNewActivity=true;
+            }
+        };
         console.log($scope)
     })
     .controller('planController',function($scope,httpService){
 
     })
-    .controller('patientController',function($scope,httpService){
+    .controller('patientController',function($scope,httpService,moment,$window,$timeout,localStorageService,buildFormService){
+        function getItem(key) {
+            return localStorageService.get(key);
+        }
+        $scope.patient = {
+            mrn:123456,
+            field:"abcdfe"
+        };
+        $scope.userId = getItem('userId');
+        $scope.userName = getItem('userName');
+        $scope.activeProtocol = '2014-0386';
+        $scope.floatyActive = false;
+        $scope.patientIDType;
+        $scope.activityStatus = [
+            {id:'complete',name:'Complete',color:'green',icon:'fa-circle'},
+            {id:'completewithvariance',name:'Complete with Variance',color:'yellow',icon:'fa-circle'},
+            {id:'notcomplete',name:'Not Complete',color:'red',icon:'fa-circle'},
+            {id:'pending',name:'Pending',color:'orange',icon:'fa-circle'},
+            {id:'awaitingreview',name:'Awaiting Review',color:'black',icon:'fa-binoculars'},
+            {id:'notspecified',name:'Not Specified',color:'silver',icon:'fa-circle'}
+        ];
+        $scope.protocols = [
+            {id:"1",name:"Fetching Protocol list",icon:"foo"}
+        ];
+        httpService.getData('User/',$scope.userId,'/Protocols').then(function(response){
+            $scope.protocols = response.data;
+        },function errorCallback(response){
+            console.log(response)
+        });
+        $scope.formElements = [
+            {fieldName:"Date of Evaluation",type:"text"},
+        {name:"NEUT%",type:"text"},
+        {name:"Lymph%",type:"text"},
+        {name:"Mono%",type:"text"},
+        {name:"Eos%",type:"text"},
+        {name:"Baso%",type:"text"},
+        {name:"IGRE%",type:"text"},
+        {name:"NEUT ABS (K/uL)",type:"text"},
+        {name:"LYMPH ABS (K/uL)",type:"text"},
+        {name:"MONO ABS (K/uL)",type:"text"},
+        {name:"EOS ABS (K/uL)",type:"text"},
+        {name:"BASO ABS (K/uL)",type:"text"},
+        {name:"IG ABS (K/uL)",type:"text"},
+        {name:"WBC (K/uL)",type:"text"},
+        {name:"RBC (M/uL)",type:"text"},
+        {name:"HGB (gm/dl)",type:"text"},
+        {name:"HCT (%)",type:"text"},
+        {name:"MCV (fL)",type:"text"},
+        {name:"MCH (pg)",type:"text"},
+        {name:"MCHC (gm/dl)",type:"text"},
+        {name:"RDWSD (fL)",type:"text"},
+        {name:"RDWCV (%)",type:"text"},
+        {name:"Platelet (K/uL)",type:"text"},
+        {name:"MPV (fL)",type:"text"},
+        {name:"INRBC (%)",type:"text"},
+        {name:"Collected Elsewhere",type:"text"}
+        ];
+        $scope.types = [
+            {id:"AccNo",name:"Session #",title:"Search by Session #",icon:"fa-heartbeat",action:"selectType",data:"data1"},
+            {id:"MRN",name:"MRN",title:"Search by MRN",icon:"fa-medkit",action:"selectType",data:"data2"},
+            {id:"SponsorSubjectId",name:"SponsorSubjectId",title:"Search by SponsorSubjectId",icon:"fa-crosshairs",action:"selectType",data:"data3"}
+        ];
+        $scope.selectType = function(data){
+            angular.forEach($scope.types,function(value,index){
+                value.selected=false;
+            });
+            data.selected=true;
+            $scope.patientIDType = data.id;
+        };
+        $scope.formData = {};
+        $scope.timeData = {};
+        $scope.submitSearch = function(){
+            httpService.getData('data/patient','?protocol='+$scope.activeProtocol+'&selector='+$scope.patientIDType+'&selectorValue='+$scope.search).then(function(response){
+                $scope.timePoints=response.data.patientTimePoints;
+                $scope.timeData.timePointsColumnHeaders = response.data.patientTimePoints;
+                $scope.timeData.activityRowHeaders = response.data.protocolActivities;
+                $scope.timeData.patientData = response.data.patientDataGroup;
+                $scope.timeData.dataGrid = [];
+                angular.forEach($scope.timeData.timePointsColumnHeaders,function(value,index){
+                    var tempValue = {};
+                    tempValue.head = value;
+                    tempValue.valueArray = [];
+                    angular.forEach($scope.timeData.activityRowHeaders,function(Rvalue,Rindex){
+                        tempRow = {};
+                        tempRow.value = false;
+                        tempRow.active=false;
+                        angular.forEach($scope.timeData.patientData,function(Dvalue,Dindex){
+                            if(Dvalue.patientTimePointId===$scope.timeData.timePointsColumnHeaders[index].id&&Dvalue.activityId===$scope.timeData.activityRowHeaders[Rindex].id)
+                            {
+                                tempRow.timePointName = $scope.timeData.timePointsColumnHeaders[index].fullName;
+                                tempRow.activityId = Dvalue.activityId;
+                                tempRow.patientActivityId = Dvalue.patientActivityId;
+                                tempRow.value = true;
+                                tempRow.status = Dvalue.status;
+                                tempRow.required = Dvalue.isRequired;
+                                angular.forEach($scope.activityStatus, function(Svalue,Sindex){
+                                    if(Svalue.name.toLowerCase()===tempRow.status.toLowerCase()){
+                                        tempRow.icon=Svalue.icon;
+                                        tempRow.color=Svalue.color;
+                                    }
+                                })
+                            }
+                        });
+                        tempValue.valueArray.push(tempRow);
+                    });
+                    $scope.timeData.dataGrid.push(tempValue)
+                })
 
+            },function errorCallback(response){
+
+            })
+        };
+        $scope.postData = function(activity){
+            console.log($scope.formData)
+        };
+        $scope.putData = function(activity){
+            console.log($scope.formData)
+        };
+        $scope.makeTime = function(){
+            var theTime = moment().format('L');
+            return theTime;
+        };
+        $scope.availHeight = window.outerHeight;
+        $scope.newFormHeight = 60;
+        $scope.search;
+        $scope.select;
+        $scope.timePointsWidth = 91;
+        $scope.gridPos = {
+            left:0,
+            right:0
+        };
+        $scope.hideNew = false;
+        $scope.previewFormElements;
+        $scope.revealHide = function(activity){
+            $scope.formElements = [];
+            if(activity){
+                console.log(activity)
+                $scope.previewFormElements = activity;
+                var pathVar=activity.patientActivityId!='00000000-0000-0000-0000-000000000000'?'/Data/Patient/PatientActivity/':'/Data/Patient/PatientActivity/Activity/';
+                var idVar=activity.patientActivityId!='00000000-0000-0000-0000-000000000000'?activity.patientActivityId:activity.activityId;
+                    httpService.getData(pathVar,idVar).then(function(response){
+                        console.log(response.data)
+                        if(response.data.fields.length>0){
+                            // angular.forEach()
+                            // angular.copy(response.data.fields,activity.fields);
+                            activity.fields=response.data.fields
+                            angular.forEach(activity.fields,function(value,index){
+                                value.label=value.fieldName;
+                                value.name=value.fieldName;
+                                value.childFields = value.children;
+                                console.log(value)
+                                angular.forEach(value.childFields,function(Cvalue,Cindex){
+                                    Cvalue.label = Cvalue.fieldName;
+                                    Cvalue.name = Cvalue.fieldName
+                                });
+                                if(value.fieldDataType){
+                                }else {
+                                    angular.forEach($scope.fields,function(Fvalue,Findex){
+                                        if(value.fieldId===Fvalue.id){
+                                            value.instructions=Fvalue.instructions;
+                                            value.fieldDataTypeId=Fvalue.fieldDataTypeId;
+                                            value.fieldDataType=Fvalue.fieldDataType;
+                                            value.listId=Fvalue.listId;
+                                            value.fieldParentId=Fvalue.fieldParentId;
+                                            value.isMasterField=Fvalue.isMasterField;
+                                            value.canBeAutomated=Fvalue.canBeAutomated;
+                                            value.categoryId=Fvalue.categoryId;
+                                            value.categoryName=Fvalue.categoryName;
+                                            value.createdById=Fvalue.createdById;
+                                            value.createdDate=Fvalue.createdDate;
+                                            value.modifiedById=Fvalue.modifiedById;
+                                            value.modifiedDate=Fvalue.modifiedDate;
+                                        }
+                                    });
+                                }
+
+                                value.formElements = buildFormService.getFormType(value)
+                            });
+
+                            var formLineHeight = 90;
+                            var minformHeight = $scope.previewFormElements.fields.length*formLineHeight<=60?100:$scope.previewFormElements.fields.length*formLineHeight;
+                            $scope.newFormHeight = $scope.previewFormElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
+                            var childHeight;
+                            console.log($scope.previewFormElements.fields)
+                            angular.forEach($scope.previewFormElements.fields,function(Pvalue,Pindex){
+                                if(Pvalue.children.length>0){
+                                    angular.forEach(Pvalue.children,function(Cvalue,Cindex){
+                                        $scope.newFormHeight += formLineHeight;
+                                    })
+                                }
+                            });
+                            $scope.oldHeight = angular.copy($scope.newFormHeight);
+                            $scope.newFormHeight = $scope.newFormHeight>window.outerHeight?window.outerHeight*.8:$scope.newFormHeight;
+                        }
+                    },function errorCallback(response){
+                    });
+                $scope.hideNew = true;
+            } else {
+                console.log('else');
+                $scope.hideNew = false;
+                $scope.loop($scope.callbackRemoveActive);
+            }
+        };
+        $scope.rowActive = function(row){
+            $scope.loop($scope.callbackRemoveActive);
+            row.active=true;
+        };
+        $scope.callbackRemoveActive = function(value){
+            value.active=false;
+    };
+        $scope.loop = function(callback){
+            angular.forEach($scope.timeData.dataGrid,function(value,index){
+
+                angular.forEach($scope.timeData.dataGrid[index].valueArray,function(Rvalue,Rindex) {
+                    callback(Rvalue)
+                })
+            })
+        };
+        $scope.fooElement = document.getElementById('scrollMe');
+        $scope.fooElement2 = document.getElementById('timePointsHeader');
+        $scope.grid = document.getElementById('scrollGrid');
+        $scope.fixMe = function(){
+            console.log('bar')
+            return $scope.foo
+        };
+        angular.element($scope.fooElement).bind("scroll",function(){
+            $scope.fooElement2.left=$scope.gridPos.left;
+        });
+        angular.element($scope.fooElement2).bind("scroll",function(){
+            var docLeft = $("#timePointsHeader").scrollLeft()-3;
+            var docTop = $("#timePointsHeader").scrollTop();
+            if ($scope.gridPos.left !== docLeft){
+                // $scope.startScroll(docLeft,docTop)
+            }
+            $timeout.cancel(timer);
+            var timer = $timeout(function(){
+                // $scope.stopScroll(docLeft,docTop);
+            },100);
+        });
+        $('html').addClass('hideOverflow');
+        $(function(){
+            $("#scrollMe").scroll(function(){
+                $("#timePointsHeader")
+                    .scrollLeft($("#scrollMe").scrollLeft());
+            });
+            $("#timePointsHeader").scroll(function(){
+                $("#scrollMe")
+                    .scrollLeft($("#timePointsHeader").scrollLeft());
+            });
+        });
+        console.log($scope)
     })
     .controller('protocolController',function($scope,httpService){
 
@@ -619,6 +938,115 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 });
             }
         };
+    })
+    .service('buildFormService',function(httpService){
+        var typeWorker = {};
+        typeWorker.getFormType = function(field){
+            var fieldObject = {}
+            // fieldObject.fieldDataType = field.fieldDataType.toLowerCase();
+            fieldObject.fieldArray = [];
+            console.log(field)
+            switch(field.fieldDataType.toLowerCase()){
+                case 'list':
+                    fieldObject.fieldArray[0] = {
+                        cat:'select',
+                        type:'select',
+                        options:[]
+                    };
+                    httpService.getData('/list/all').then(function(response){
+                        fieldObject.fieldArray[0].options = response.data;
+                    },function errorCallback(response){
+                    });
+                    break;
+                case 'yes/no':
+                    fieldObject.fieldArray[0] = {
+                        cat:'radio',
+                        type:'radio',
+                        placeholder:'',
+                        options:[{id:'yes',name:'yes'},{id:'no',name:'no'}]
+                    };
+                    break;
+                case 'datetime':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        placeholder:'date',
+                        type:'date'
+                    };
+                    break;
+                case 'float':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        placeholder:'float',
+                        type:'number'
+                    };
+                    break;
+                case 'int':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        placeholder:'int',
+                        type:'number'
+                    };
+                    break;
+                case 'group':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        placeholder:'',
+                        type:'hidden',
+                        children:typeWorker.loopChildFields(field.childFields,typeWorker.getFormType)
+                    };
+                    break;
+                case 'boolean':
+                    fieldObject.fieldArray[0] = {
+                        cat:'boolean',
+                        type:'checkbox'
+                    };
+                    break;
+                case 'labvalue':
+                    fieldObject.fieldArray[0] = {
+                        label:'value',
+                        placeholder:'int',
+                        cat:'labvalue',
+                        type:'number'
+                    };
+                    fieldObject.fieldArray[1] = {
+                        label:'unit',
+                        placeholder:'text',
+                        cat:'labvalue',
+                        type:'text'
+                    };
+                    fieldObject.fieldArray[2] = {
+                        label:'range',
+                        placeholder:'number range',
+                        cat:'labvalue',
+                        type:'text',
+                        minMax:[0,10]
+                    };
+                    break;
+                case 'string':
+                    fieldObject.fieldArray[0] = {
+                        cat:'text',
+                        type:'text'
+                    };
+                    break;
+                default:
+            }
+
+            fieldObject.fieldArray[0].label = field.label||field.name;
+            fieldObject.fieldArray[0].name = field.name;
+            return fieldObject;
+        };
+        typeWorker.somethingCallback=function(field){
+            typeworker.getFormType(field)
+        };
+        typeWorker.loopChildFields=function(children,callBack){
+            var childFormObject = {}
+            childFormObject.forms = [];
+            angular.forEach(children,function(value,index){
+                childFormObject.forms.push(callBack(value))
+            })
+            return childFormObject;
+        };
+        return typeWorker;
     })
     .service('logoutService',function($cookies,$location){
         var logoutWorker = {}
@@ -686,9 +1114,24 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
                 httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 httpWorker.checkAuthLogOut();
-                // console.log(httpWorker.reqSpecs.headers)
                 return $http({
                     method:'GET',
+                    url:httpWorker.apiRoot.getPath()+path1+param+path2,
+                    headers:httpWorker.reqSpecs.headers
+                })
+            } else {
+                // console.log('not logged in');
+                logoutService.logout()
+            }
+        };
+        httpWorker.deleteData = function(path1,param,path2){
+            param = param?param:'';
+            path2 = path2?path2:'';
+            if(httpWorker.checkCookie('ARC_UserToken')!=null){
+                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+                httpWorker.checkAuthLogOut();
+                return $http({
+                    method:'DELETE',
                     url:httpWorker.apiRoot.getPath()+path1+param+path2,
                     headers:httpWorker.reqSpecs.headers
                 })

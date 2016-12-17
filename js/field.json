@@ -1,0 +1,44 @@
+[
+  {
+    "Id": "Field Id1",
+    "Name": "Field name1",
+    "Instructions": "Field Instructions1",
+    "DisplayName": "Field DisplayName1",
+    "FieldDataType": "Field FieldDataType1",
+    "CanBeAutomated": "Field CanBeAutomated1",
+    "CategoryId": "Field CategoryId1",
+    "CategoryName": "Field CategoryName1",
+    "CreatedById": "Field CreatedById1",
+    "CreatedDate": "Field CreatedDate1",
+    "ModifiedById": "Field ModifiedById1",
+    "ModifiedDate": "Field ModifiedDate1"
+  },
+  {
+    "Id": "Field Id2",
+    "Name": "Field name2",
+    "Instructions": "Field Instructions2",
+    "DisplayName": "Field DisplayName2",
+    "FieldDataType": "Field FieldDataType2",
+    "CanBeAutomated": "Field CanBeAutomated2",
+    "CategoryId": "Field CategoryId2",
+    "CategoryName": "Field CategoryName2",
+    "CreatedById": "Field CreatedById2",
+    "CreatedDate": "Field CreatedDate2",
+    "ModifiedById": "Field ModifiedById2",
+    "ModifiedDate": "Field ModifiedDate2"
+  },
+  {
+    "Id": "Field Id3",
+    "Name": "Field name3",
+    "Instructions": "Field Instructions3",
+    "DisplayName": "Field DisplayName3",
+    "FieldDataType": "Field FieldDataType3",
+    "CanBeAutomated": "Field CanBeAutomated3",
+    "CategoryId": "Field CategoryId3",
+    "CategoryName": "Field CategoryName3",
+    "CreatedById": "Field CreatedById3",
+    "CreatedDate": "Field CreatedDate3",
+    "ModifiedById": "Field ModifiedById3",
+    "ModifiedDate": "Field ModifiedDate1"
+  }
+]

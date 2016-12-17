@@ -68,11 +68,7 @@ body{
     text-transform: capitalize;
     font-size: 1.2REM;
 }
-/*.form-control {*/
-    /*font-family: roboto;*/
-/*}*/
-
-#searchHeader .form-control, #drawerRow .form-control{
+#searchHeader .form-control, #drawerRow .form-control,.magnifyingglass .form-control{
     font-family: "FontAwesome";
     color:white;
 }
@@ -87,7 +83,7 @@ body{
 #newActivityRow > .fields.active,
 #newActivityRow.active .fields,
 #newFieldRow > .fields.active,
-#newFieldRow.active .fields {
+#newFieldRow.active .fields,.newOuter > div > div{
     box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
     background-color:white;
 }
@@ -166,14 +162,6 @@ ul.controls i{
     margin: 20px -2%;
     width: 105%;
 }
-/*#searchFilter input:focus {*/
-    /*color: white;*/
-    /*font-family: roboto;*/
-/*}*/
-/*#searchFilter input{*/
-
-    /*font-family: "FontAwesome"*/
-/*}*/
 .fieldControls {
     padding-top: 6px;
 }
@@ -320,4 +308,138 @@ input#searchFields:-moz-placeholder { /* Firefox 18- */
 }
 #searchFields-wrap {
     padding: 5px 0px 0px 1%
+}
+
+/* Patient Activites page */
+#activitiesHeader{
+    background: #607D8B;
+    color: white;
+    border-width: 1px;
+    cursor: pointer;
+    font-size: 1.5em;
+    margin: -20px auto 1px -15px;
+    width: 105%;
+    transition: background .15s;
+}
+#activitiesHeader select{
+    color:#5d5d5d;
+    margin:10px;
+}
+#activitiesHeader select option {
+    color:silver;
+    background-color:grey;
+}
+.activitySelector{
+    padding-top: 4px;
+}
+.activitySelector li{
+    display:inline;
+}
+#timePointsHeader{
+    overflow-x:scroll;
+
+    white-space: nowrap;
+}
+#timePointsHeader > ul > li{
+    display:inline-block;
+    min-width:87px;
+    border:1px solid silver;
+}
+.dataRows {
+}
+.dataRows li{
+    border-top:1px solid silver;
+    padding:1px;
+    background-color:white;
+    min-height:33px;
+}
+#timePointsTitle li{
+    display: inline-block;
+    min-width: 87px;
+    border: 1px solid silver;
+    padding: 1px;
+    background-color: white;
+    min-height: 33px;
+}
+#timePointsTitle li{
+    border-bottom: 5px solid #787878;
+    border-top: 5px solid #787878;
+    height: 150px;
+}
+#timePointsTitle li > span{
+    word-wrap: break-word;
+    width: 140px;
+    height: 65px;
+    position: absolute;
+    white-space: normal;
+    transform: rotate(270deg);
+}
+#timePointsTitle li > span > span{
+    position: relative;
+    right: 30px;
+    bottom: 25px;
+}
+#activityRowheader ul li {
+    background-color: white;
+    min-height: 33px;
+    border-left: 2px solid #7d7d7d;
+    border-bottom: 1px solid #7d7d7d;
+    min-width: 10%;
+}
+.activityLabel{
+    font-size: .55REM;
+    position: relative;
+    top: 25px;
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+#activityRowheader ul {
+    width: 120%;
+    margin: 0 0px 0 -15px;
+    border-right:1px solid #7d7d7d;
+}
+#activityRowheader ul li:first-child{
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+    border-top: 5px solid #7d7d7d;
+}
+html.hideOverflow{
+    overflow-y:hidden;
+}
+#titleScroll .title{
+
+}
+#scrollGrid{
+    margin-left: -13px;
+}
+#scrollGrid ul li > div{
+    position:absolute;
+}
+li:first-child > ul.dataRows {
+
+
+}
+ul.dataRows li.required{
+    background-color:#f0f0f0;
+}
+.activitySelector li.hover i:first-child{
+    color:#80CBC4;
+}
+.activitySelector li.hover i:nth-child(2){
+    color:#B2DFDB;
+}
+.activitySelector li span i:nth-child(2){
+    position: absolute;
+    right: 15px;
+    top: 12px;
+}
+.activitySelector li.selected span i:nth-child(2){
+    color:#4CAF50;
+}
+.dataRows li.active{
+    border: 2px solid #CDDC39;
+}
+.dataRows li.inactive{
+
 }
