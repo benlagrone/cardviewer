@@ -50,7 +50,7 @@
             >
                 <div ng-hide="!items.edit" class="row alert alert-warning">
                     <div class="col-md-9 col-sm-9 col-xs-9 col-lg-9">
-                        Edited Data must be submitted! &nbsp;&nbsp;<i class="fa fa-paper-plane fa-2x"
+                        {{items.headMessage}} &nbsp;&nbsp;<i class="fa fa-paper-plane fa-2x"
                                                                       aria-hidden="true"
                                                                       style="color: rgb(76, 175, 80);"></i>
                     </div>
@@ -168,12 +168,12 @@
                         <ul>
                             <li
                                     class="activityFields"
-                                    ng-repeat="field in items.fields"
+                                    ng-repeat="(fieldIndex,field) in items.fields"
                                     style="float:left"
                                     ng-class="{'last':$last}"
                                     {{field.ordinal=$index}}>
                                 <span>
-                                    &nbsp;{{$index+1}}:
+                                    &nbsp;{{fieldIndex+1}}:
                                     <a ng-click="showFieldInDrawer(field.fieldName)">{{field.fieldName}}</a>
                                 </span>
                             </li>
@@ -247,6 +247,7 @@
                                 <span>
                                     {{$index}}&nbsp;
                                     <a ng-click="showFieldInDrawer(field.fieldName)">{{field.fieldName}}</a>
+                                    <input type="hidden" ng-model="field.ordinal" value="$index"/>
                                 </span>
                             </li>
                         </ul>
@@ -276,10 +277,17 @@
                 </style>
                 <form name="newActivity" novalidate class="css-form">
                     <div class="row fieldControls">
-                        <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7">
-                            <h6 ng-if="addNewList">New Activity</h6>
+
+                        <div ng-hide="!hideDrawer" class="col-md-7 col-sm-7 col-xs-7 col-lg-7">
+                            <h6 ng-if="addNewList">New Activity foo</h6>
                             <h6 ng-if="!addNewList">Preview {{previewFormElements.name}} Form</h6>
                         </div>
+                        <div ng-hide="hideDrawer" class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
+                            <h6 ng-if="addNewList">New Activity foo</h6>
+                            <h6 ng-if="!addNewList">Preview {{previewFormElements.name}} Form</h6>
+                        </div>
+                        
+
                         <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
                             <ul class="controls">
                                 <li ng-if="addNewList">
@@ -378,7 +386,7 @@
                             <ul>
                                 <li class="addNewActivityFields" ng-repeat="field in newData.activity.fields"
                                     style="float:left" ng-class="{'last':$last}">
-                                    <span>&nbsp;<a ng-click="showFieldInDrawer(field.name)">{{field.name||field.fieldName}}</a></span>
+                                    <span>&nbsp;{{$index}}:&nbsp;<a ng-click="showFieldInDrawer(field.name)">{{field.name||field.fieldName}}</a></span>
                                 </li>
                             </ul>
                         </li>
@@ -424,19 +432,22 @@ width:27%;float:left;
                         ng-hide="addNewList"
                         ng-if="previewFormElements.fields.length>0"
                         class="animate-hide data-rows"
-                        style="overflow-y: {{oldHeight>=availHeight?'scroll':'hidden'}};height:{{newFormHeight>=availHeight?availHeight*85:newFormHeight}}px;max-height:85%;"
+                        style="overflow-y: {{oldHeight>=availHeight?'scroll':'hidden'}};
+                        height:{{newFormHeight>=availHeight?availHeight*85:newFormHeight}}px;
+                        max-height:85%;"
                     >
-                        <li ng-repeat="form in previewFormElements.fields"
-                            class="previewRow {{form.fieldDataType}}"
-                            style="{{form.fieldDataType==='Group'?'width: 100%!important;':''}}
-                            {{form.fieldDataType==='LabValue'?'width:60%!important;':''}}
+                        <li ng-repeat="formItem in previewFormElements.fields"
+                            class="previewRow {{formItem.fieldDataType}}"
+                            style="{{formItem.fieldDataType==='Group'?'width: 100%!important;':''}}
+                            {{formItem.fieldDataType==='LabValue'?'width:60%!important;':''}}
 ">
-                            <div ng-repeat="inputField in form.formElements.fieldArray"
+                            <div ng-repeat="inputField in formItem.formElements.fieldArray"
                                  class="{{inputField.type==='hidden'?'select':inputField.type}} {{inputField.cat}} {{inputField.name}}">
                                 <span ng-if="inputField.cat!='boolean'" class="label"
                                       style="line-height: 1.7REM;">
                                      {{inputField.label}}
                                 </span>
+
                                 <span class="field ">
                                     <input
                                             style="
@@ -450,8 +461,6 @@ width:27%;float:left;
                                     </span>
                                 <span ng-if="inputField.cat==='boolean'" class="form-group">
                                     <input
-                                        ng-model=""
-                                        placeholder="{{inputField.placeholder}}"
                                         type="checkbox"
                                         id="{{inputField.name}}"
                                         class="">
@@ -498,14 +507,16 @@ width:27%;float:left;
                                                       type="{{childInputField.type}}"/>
 
 
-                        <span ng-if="childInputField.cat==='boolean'" class="form-group">
-                            <input
-                                    ng-model=""
-                                    type="checkbox"
-                                    id="{{childInputField.name}}"
-                                    class="">
-                            <label for="{{childInputField.name}}">{{childInputField.cat!='labvalue'?childInputField.name:childInputField.label}}</label>
-                        </span>
+                                                    <span ng-if="childInputField.cat==='boolean'" class="form-group">
+                                                        <input
+                                                                ng-model=""
+                                                                type="checkbox"
+                                                                id="{{childInputField.name}}"
+                                                                class="">
+                                                        <label for="{{childInputField.name}}">
+                                                            {{childInputField.cat!='labvalue'?childInputField.name:childInputField.label}}
+                                                        </label>
+                                                    </span>
 
 
                                                 </div>
@@ -551,6 +562,11 @@ width:27%;float:left;
 <div id="drawerRow"
      ng-hide="hideDrawer"
      class="row animate-hide {{hideDrawer!=false?'':'active'}}">
+    <style>
+        .data-rows{
+            padding-bottom: 18px;
+        }
+    </style>
     <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
         <div class="row">
             <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-hide="!hideFieldSearch">
@@ -643,14 +659,14 @@ width:27%;float:left;
                         <!--style="color:orange;"-->
                         <!--ng-show="items.block"></i>-->
                     </div>
-                    <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7" ng-show="workingActivity!=undefined">
+                    <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6" ng-show="workingActivity!=undefined">
                         <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
                     </div>
 
-                    <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-show="workingActivity===undefined">
+                    <div class="col-md-7 col-sm-7 col-xs-7 col-lg-7" ng-show="workingActivity===undefined">
                         <h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>
                     </div>
-                    <div class="col-md-4 col-sm-4 col-xs-4 col-lg-4">
+                    <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
                         <ul class="controls" ng-hide="items.hide">
                             <li ng-if="enableFeature.copyField">
                                 <span class="edit-copy fa-stack fa-lg">
@@ -687,11 +703,33 @@ width:27%;float:left;
                             <input ng-model="items.instructions"/>
                        </span>
                     </li>
+
                     <li ng-if="items.categoryName || items.edit">
+
+                            <md-checkbox
+                                    ng-model="items.canBeAutomated"
+                                    id="canBeAutomated"
+                                    aria-label="canBeAutomated">
+                            Can Be Automated
+                            </md-checkbox>
+
+
+                        <input type="checkbox"
+                               ng-model="items.canBeAutomated"
+                               style="position: relative; visibility: visible;;left:0px;"
+
+                               [ng-false-value="items.categoryName='00000000-0000-0000-0000-000000000000'"]
+                             >
+                    </li>
+
+                    <li ng-if="items.categoryName || items.edit || items.canBeAutomated"
+                        ng-show="items.canBeAutomated">
                         <span class="label">categoryName</span>
                         <span ng-hide="items.edit" class="field">{{items.categoryName}}</span>
                         <span ng-hide="!items.edit" class="field">
-                            <input ng-model="items.categoryName"/>
+                            <select ng-model="items.categoryName"
+                                    ng-options="options.id as options.name for options in fieldCategories">
+                            </select>
                        </span>
                     </li>
                     <li ng-if="items.fieldDataType || items.edit">
@@ -704,6 +742,77 @@ width:27%;float:left;
                             </select>
                         </span>
                     </li>
+
+                    <li ng-if="items.categoryName || items.edit"
+                        ng-show="items.fieldDataType==='41666179-7d33-4af0-9ab3-05f7385c110c'">
+                        <span class="label">List Type</span>
+                        <span ng-hide="items.edit" class="field">{{items.categoryName}}</span>
+                        <span ng-hide="!items.edit" class="field">
+
+                            <select ng-model="items.listId"
+                                    ng-options="options.id as options.name for options in listList">
+                            </select>
+
+                       </span>
+                    </li>
+
+                    <li ng-if="items.categoryName || items.edit"
+                    ng-show="items.listId==='new'"
+                    >
+                        <form ng-if="items.categoryName || items.edit"
+                              ng-show="items.listId==='new'"
+                              id="newFieldType"
+                              name="newFieldType">
+<ul>
+    <li>
+        <h7 >Add New List</h7>
+    </li>
+    <li>
+        <i ng-click="submitNewList()"
+           class="fa fa-paper-plane fa-2x"
+           aria-hidden="true" style="color: rgb(76, 175, 80);"></i>
+    </li>
+</ul>
+                            <ul>
+                                <li>
+
+                                    <span class="label">Name </span>
+                                    <span class="input">
+                                        <input ng-model="newField.name">
+                                    </span>
+                                </li>
+                                <li>
+                                    <h8 >Add List Items</h8>
+                                </li>
+                                <li>
+                                    <a ng-click="addMoreFields()">
+                                        <i class="fa fa-plus-square" aria-hidden="true"></i>
+                                        Add a field to your new List
+                                    </a>
+                                </li>
+                                <li ng-repeat="(fieldFieldIndex,field) in newField.fields">
+                                    <ul>
+
+                                        <li>
+
+                                            <span class="label">{{fieldFieldIndex+1}}: Name</span>
+                                            <span class="input">
+                                        <input ng-model="field.name">
+                                    </span>
+                                        </li>
+                                        <li>
+                                            <span class="label">Description </span>
+                                            <span class="input">
+                                        <input ng-model="field.description">
+                                    </span>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </form>
+
+                    </li>
+
                     <li ng-if="items.childFields.length>0">
                         <span class="label" style="float:left;">Child Fields</span>
                         <ul>
@@ -868,7 +977,8 @@ width:27%;float:left;
                                 <!--</a>-->
                         </span>
                             <ul>
-                                <li ng-repeat="field in newData.field.childFields" style="float:left">
+                                <li ng-repeat="(copyIndex,field) in newData.field.childFields" style="float:left">
+                                    &nbsp;{{copyIndex+1}}:
                                     <span><a ng-click="showFieldInDrawer(field.name)">{{field.name}}</a>,&nbsp;</span>
                                 </li>
                             </ul>

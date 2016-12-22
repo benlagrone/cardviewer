@@ -31,7 +31,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             return localStorageService.get(key);
         }
         $scope.enableFeature = {
-            addActivity : true,
+            addActivity : false,
             copyActivity:true,
             sortActivities:false,
             addField : true,
@@ -43,7 +43,68 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         $scope.makeTime = {
             time:moment().format('L')
         };
+        $scope.fieldCategories = [];
+        var newFieldField = {
+            name:'',
+            description:'',
+            ordinal:0
+        };
+        $scope.newField = {
+            fields:[]
+        };
+        httpService.getData('Data/Field/Categories').then(function(response){
+            $scope.fieldCategories = response.data;
+            var leadOption = {
+                id:'00000000-0000-0000-0000-000000000000',
+                name:'NA'
+            };
+            $scope.fieldCategories.push(leadOption)
+        },function errorCallback(response){});
         $scope.availHeight = window.outerHeight;
+        $scope.addMoreFields = function(){
+            // var copyField = angular.copy(newFieldField)
+            $scope.newField.fields.push(angular.copy(newFieldField));
+            newFieldField.ordinal +=1;
+        };
+        $scope.submitNewList = function(){
+            var postData = {
+                Name:$scope.newField.name,
+                ListItems:[]
+            };
+            angular.forEach($scope.newField.fields,function(value,index){
+                console.log(value)
+                var listObject = {
+                    Name:value.name,
+                    Description:value.description,
+                    Ordinal:value.ordinal
+                };
+                postData.ListItems.push(listObject)
+            })
+            console.log(postData)
+          httpService.postData('List',postData).then(function(response){
+              getListList();
+          },function errorCallback(response){})
+
+        };
+        $scope.addMoreFields();
+        var recipient = 'Erica';
+        $scope.makeTacos = function(recipient){
+            var tacos = function(){
+                var taco;
+                var tacosIngredients = {
+                    shell:'flour tortilla',
+                    cheese:'cheddar',
+                    meat:['bacon','eggs'],
+                    potatos:'potatoes',
+                    salsa:'tobasco'
+                };
+                angular.forEach(tacosIngredients,function(value,index){
+                    taco += value;
+                });
+                // deliverTo(recipient)
+                return taco;
+            }
+        }
         $scope.newFormHeight = 100;
         $scope.previewFormElements = [];
         $scope.userId = getItem('userId');
@@ -78,6 +139,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             }
         };
         $scope.dataTypesList = [];
+        $scope.listList = [];
         $scope.addSymbol = 'fa-plus-square';
         $scope.hideNewActivity = true;
         $scope.hideNewField = true;
@@ -127,7 +189,10 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             form.$setUntouched();
         };
         $scope.postNewActivity = function(form){
-            if(!form.$invalid){
+            console.log(form)
+            console.log($scope.newData.activity);
+            console.log(form.$valid)
+            if(form.$valid){
                 angular.forEach($scope.activities,function(value,index){
                     if(value.id===$scope.newData.activity.id){
                         value.hide=false;
@@ -135,6 +200,9 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                         value.edit=false;
                         $timeout(function(){value.hide=true},1000);
                     }
+                });
+                angular.forEach($scope.newData.activity.fields,function(value,index){
+                    value.ordinal = index;
                 });
                 var postData = {
                     "fields": $scope.newData.activity.fields,
@@ -158,16 +226,19 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 $scope.newActivityID++;
                 newData.id = $scope.newActivityID;
                 $scope.newData.activity = newData;
-                $scope.clearNewActivity();
+                $scope.clearNewActivity(form);
                 console.log(form)
                 form.$setPristine();
                 form.$setUntouched();
-
-                // httpService.postData('Data/Field/',postData).then(function(response){
-                //     console.log(response)
-                // },function errorCallabck(response){
-                //     console.log(response)
-                // })
+console.log(postData)
+                httpService.postData('Data/Activity/',postData).then(function(response){
+                    console.log(response)
+                },function errorCallabck(response){
+                    console.log(response)
+                })
+            } else {
+                console.log('dirty')
+                form.$setDirty();
             }
         };
         $scope.openEditField = function(field){
@@ -249,6 +320,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 if(!found){
                     $scope.activityCats.push(value.category)
                 }
+                value.headMessage='Edited Data must be submitted!';
                 value.hide = true;
                 value.edit = false;
                 value.hideRow = false;
@@ -278,6 +350,18 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             })
         },function errorCallBack(response){
         });
+        function getListList() {
+            httpService.getData('List/All').then(function (response) {
+                $scope.listList = response.data;
+                var leadOption = {
+                    id: 'new',
+                    name: 'Add new'
+                };
+                $scope.listList.push(leadOption)
+            }, function errorCallback(response) {
+            });
+        }
+        getListList();
         $scope.getFieldDataType = function(fileTypeID){
             var usedID;
             angular.forEach($scope.dataTypesList,function(value,index){
@@ -289,10 +373,11 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         };
         $scope.submitValid = true;
         $scope.submitActivityChanges = function(activity){
+            activity.headMessage='Sending updated Activity data';
             console.log(activity);
             var putData = {
                 "fields":[],
-                "id": activity.id,
+                "Id": activity.id,
                 "name": activity.name,
                 "category": activity.category,
                 "description": activity.description,
@@ -323,12 +408,25 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                    // listId:value.listId,
                    // modifiedById :value.modifiedById,
                    // modifiedDate: value.modifiedDate,
-                   fieldName:value.name
+                   fieldName:value.name,
+                   ordinal:index
                }
                 putData.fields.push(fieldData);
             });
             console.log(putData)
             //ready to PUT postData
+            httpService.putData('Data/Activity/',activity.id,putData).then(function(response){
+                activity.headMessage='Activity updated successfully';
+                var timer = $timeout(function(){
+                    activity.edit=false;
+                    activity.headMessage='Edited Data must be submitted!';
+                },300);
+                $scope.showDrawerClose();
+                $scope.clearWorkingActivity();
+                // $scope.toggleFieldsLabel($event,items);
+            },function errorCallback(response){
+
+            })
         };
         $scope.submitFieldChanges = function(field){
             console.log(field);
@@ -386,7 +484,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         $scope.showFieldInDrawer = function(fieldId){
             $scope.hideDrawer = false;
             $scope.searchFields = fieldId;
-            $scope.hideFieldSearch = false;
+            $scope.hideFieldSearch = true;
         };
         $scope.addChildFieldToField = function(field){
             console.log(field)
@@ -562,14 +660,15 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 if(value.id===activity.id){
                     httpService.getData('Data/Activity/',activity.id).then(function(response){
                         activity.fields = response.data.fields;
-                        console.log($scope.workingActivity)
-                        console.log(response.data)
+                        // $scope.hideDrawer = true;
+                        if($scope.workingActivity)
                         $scope.workingActivity.fields = response.data.fields;
                         angular.forEach($scope.fields,function(value,index){
+                            console.log(value)
                             value.showIncluded = false;
-                            console.log(response.data);
                             angular.forEach(response.data.fields,function(Fvalue,Findex){
-                                if(Fvalue.id===value.id){
+                                console.log(Fvalue)
+                                if(Fvalue.fieldId===value.fieldId){
                                     value.showIncluded = true;
                                 }
                             });
@@ -617,7 +716,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 $scope.newFormHeight = $scope.previewFormElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
                 var childHeight;
                 angular.forEach($scope.previewFormElements.fields,function(Pvalue,Pindex){
-                    if(Pvalue.childFields.length>0){
+                    if(Pvalue.childFields){
                         angular.forEach(Pvalue.childFields,function(Cvalue,Cindex){
                             $scope.newFormHeight += formLineHeight;
                         })
@@ -643,6 +742,37 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             mrn:123456,
             field:"abcdfe"
         };
+        $scope.fields = [];
+        $scope.toggleReportView = false;
+        $scope.workingActivity;
+        $scope.hideFieldSearch = true;
+        $scope.showDrawerClose = function(){
+            $scope.hideDrawer=true;
+            $scope.searchFields = undefined;
+            $scope.hideFieldSearch = true;
+
+        };
+        $scope.closeDrawerSymbol = 'fa-times-circle';
+        $scope.drawerMouseLeave = function(){
+            $scope.drawerSymbol = 'fa-list'
+        };
+        $scope.drawerMouseOver = function(){
+            $scope.drawerSymbol = 'fa-arrow-left'
+        };
+        $scope.closeDrawerMouseOver = function(){
+            if($scope.closeDrawerSymbol != 'fa-arrow-circle-right')
+                $scope.closeDrawerSymbol = 'fa-arrow-circle-right';
+        };
+        $scope.closeDrawerMouseLeave = function(){
+            if($scope.closeDrawerSymbol != 'fa-times-circle')
+                $scope.closeDrawerSymbol = 'fa-times-circle';
+        };
+        $scope.enableFeature = {
+            copyActivity: true
+        };
+        $scope.reportRequestObject =
+        $scope.hideDrawer = true;
+        $scope.submitModel = {};
         $scope.userId = getItem('userId');
         $scope.userName = getItem('userName');
         $scope.activeProtocol = '2014-0386';
@@ -704,19 +834,93 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             data.selected=true;
             $scope.patientIDType = data.id;
         };
-        $scope.formData = {};
         $scope.timeData = {};
+        $scope.patientData;
+        $scope.launchReporting = function() {
+            $scope.hideDrawer = false;
+            httpService.getData('Data/Fields').then(function (response) {
+                $scope.fields = [];
+                angular.forEach(response.data, function (value, key) {
+                    value.fieldName = value.name;
+                    value.fieldId = value.id;
+                    value.hide = true;
+                    value.edit = false;
+                    value.showIncluded = false;
+                    value.block = false;
+                    $scope.fields.push(value);
+                });
+            }, function errorCallBack(response) {
+            });
+            if(!$scope.patientData)
+                $scope.submitSearch();
+        };
+        $scope.generateReport = function(){
+            $scope.toggleReportView = true;
+            $scope.hideDrawer=true;
+            var reportData = {
+                patientId:$scope.patientData.id,
+                protocol:$scope.activeProtocol,
+                List:[]
+            };
+            angular.forEach($scope.reportFieldsArray,function(value,index){
+                reportData.List.push(value.id)
+            });
+            var postPath = 'Data/Patient/'+reportData.patientId+'/Protocol/'+reportData.protocol+'/Report';
+            httpService.postData(postPath,reportData.List).then(function(response){
+                $scope.timeData.fieldsReport = response.data;
+                $scope.timeData.reportsGrid = [];
+                angular.forEach($scope.timeData.timePointsColumnHeaders, function (value, index) {
+                    var tempValue = {};
+                    tempValue.head = value;
+                    tempValue.valueArray = [];
+                    angular.forEach($scope.timeData.fieldsReport, function (Fvalue, Findex) {
+                        tempRow = {};
+                        tempRow.value = false;
+                        tempRow.active=false;
+                        angular.forEach(Fvalue.patientFieldDataGroups,function(Gvalue,Gindex){
+                            if(value.id===Gvalue.patientTimePointId){
+                                tempRow.timePointName = $scope.timeData.timePointsColumnHeaders[index].fullName;
+                                tempRow.fieldName=Fvalue.fieldName;
+                                tempRow.fieldId=Fvalue.fieldId;
+                                tempRow.patientId=Fvalue.patientId;
+                                tempRow.value=Gvalue.value;
+                            }
+                        });
+                        tempValue.valueArray.push(tempRow);
+                    });
+                    $scope.timeData.reportsGrid.push(tempValue)
+                })
+            },function errorCallback(){
+
+            })
+
+            };
         $scope.submitSearch = function(){
+            $scope.toggleReportView = false;
+
             httpService.getData('data/patient','?protocol='+$scope.activeProtocol+'&selector='+$scope.patientIDType+'&selectorValue='+$scope.search).then(function(response){
+                $scope.patientData={
+                  id:response.data.id,
+                    intId:response.data.intId,
+                    mrn:response.data.mrn,
+                    firstName:response.data.firstName,
+                    middleName:response.data.middleName,
+                    lastName:response.data.lastName,
+                    dob:response.data.dob,
+                    name:response.data.name
+                };
                 $scope.timePoints=response.data.patientTimePoints;
                 $scope.timeData.timePointsColumnHeaders = response.data.patientTimePoints;
                 $scope.timeData.activityRowHeaders = response.data.protocolActivities;
                 $scope.timeData.patientData = response.data.patientDataGroup;
                 $scope.timeData.dataGrid = [];
+
+
                 angular.forEach($scope.timeData.timePointsColumnHeaders,function(value,index){
                     var tempValue = {};
                     tempValue.head = value;
                     tempValue.valueArray = [];
+
                     angular.forEach($scope.timeData.activityRowHeaders,function(Rvalue,Rindex){
                         tempRow = {};
                         tempRow.value = false;
@@ -747,12 +951,80 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
 
             })
         };
-        $scope.postData = function(activity){
-            console.log($scope.formData)
+        $scope.postData = function(){
+            console.log($scope.previewFormElements);
+            console.log($scope.formElements);
+            angular.forEach($scope.formElements.fields,function(value,index){
+                value.value = value.formElements.fieldArray[0].value;
+            });
+            console.log()
+            var data = {
+
+            };
+            switch ($scope.formElements.color){
+                case 'green':
+                    httpService.putData().then(function(response){
+
+                    },function errorCallback(response){
+
+                    });
+
+                    break;
+                case 'orange':
+                    httpService.postData().then(function(response){
+
+                    },function errorCallback(response){
+
+                    });
+
+                    break;
+                case 'grey':
+                    httpService.postData().then(function(response){
+
+                    },function errorCallback(response){
+
+                    });
+
+                    break;
+                default:
+            }
+
+
+
         };
         $scope.putData = function(activity){
-            console.log($scope.formData)
+
         };
+        $scope.showFieldSearch = function(){
+            $scope.hideFieldSearch = false;
+        };
+        $scope.closeFieldsSearch = function(){
+            // if(!$scope.searchFields)
+            $scope.hideFieldSearch = true;
+            $scope.searchFields = undefined;
+        };
+        $scope.addThisFieldToActivity = function(obj,field){
+            $scope.reportFieldsArray = [];
+            angular.forEach($scope.fields,function(value,index){
+                if(value.id===field.id){
+                    if(obj.target.attributes.data.value==="add"){
+                        field.fieldName = field.name;
+                    }
+                    if(obj.target.attributes.data.value==="remove"){
+                        var foundIndex = undefined;
+                        angular.forEach(value.childFields,function(Fvalue,Findex){
+                            if(Fvalue.id===field.id){
+                                foundIndex = Findex;
+                            }
+                        });
+                    }
+                }
+                if(value.showIncluded===true){
+                    $scope.reportFieldsArray.push(value);
+                }
+            });
+        };
+
         $scope.makeTime = function(){
             var theTime = moment().format('L');
             return theTime;
@@ -769,23 +1041,26 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         $scope.hideNew = false;
         $scope.previewFormElements;
         $scope.revealHide = function(activity){
-            $scope.formElements = [];
+            $scope.formElements;
+            $scope.previewFormElements = {
+                fieldsMessage:'fetching fields...'
+            };
             if(activity){
-                console.log(activity)
+                activity.fieldsMessage= $scope.previewFormElements.fieldsMessage;
+                $scope.formElements = activity;
                 $scope.previewFormElements = activity;
                 var pathVar=activity.patientActivityId!='00000000-0000-0000-0000-000000000000'?'/Data/Patient/PatientActivity/':'/Data/Patient/PatientActivity/Activity/';
                 var idVar=activity.patientActivityId!='00000000-0000-0000-0000-000000000000'?activity.patientActivityId:activity.activityId;
+                  //this condition could be removed once the PUT is implemented
+                // if(!activity.fields)
                     httpService.getData(pathVar,idVar).then(function(response){
-                        console.log(response.data)
                         if(response.data.fields.length>0){
-                            // angular.forEach()
-                            // angular.copy(response.data.fields,activity.fields);
-                            activity.fields=response.data.fields
+                            activity.fields=response.data.fields;
                             angular.forEach(activity.fields,function(value,index){
                                 value.label=value.fieldName;
                                 value.name=value.fieldName;
                                 value.childFields = value.children;
-                                console.log(value)
+                                // console.log(value)
                                 angular.forEach(value.childFields,function(Cvalue,Cindex){
                                     Cvalue.label = Cvalue.fieldName;
                                     Cvalue.name = Cvalue.fieldName
@@ -810,33 +1085,39 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                                         }
                                     });
                                 }
-
                                 value.formElements = buildFormService.getFormType(value)
                             });
-
-                            var formLineHeight = 90;
-                            var minformHeight = $scope.previewFormElements.fields.length*formLineHeight<=60?100:$scope.previewFormElements.fields.length*formLineHeight;
-                            $scope.newFormHeight = $scope.previewFormElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
-                            var childHeight;
-                            console.log($scope.previewFormElements.fields)
-                            angular.forEach($scope.previewFormElements.fields,function(Pvalue,Pindex){
-                                if(Pvalue.children.length>0){
-                                    angular.forEach(Pvalue.children,function(Cvalue,Cindex){
-                                        $scope.newFormHeight += formLineHeight;
-                                    })
-                                }
-                            });
-                            $scope.oldHeight = angular.copy($scope.newFormHeight);
-                            $scope.newFormHeight = $scope.newFormHeight>window.outerHeight?window.outerHeight*.8:$scope.newFormHeight;
+                        } else {
+                            $scope.previewFormElements.fieldsMessage = 'No Fields returned';
                         }
+                        $scope.getPreviewHeight();
                     },function errorCallback(response){
                     });
                 $scope.hideNew = true;
             } else {
-                console.log('else');
+                $scope.previewFormElements.fields=undefined;
+                $scope.previewFormElements.fieldsMessage = 'No Fields returned';
                 $scope.hideNew = false;
                 $scope.loop($scope.callbackRemoveActive);
             }
+        };
+        $scope.getPreviewHeight = function(){
+            var formLineHeight = 90;
+            if($scope.previewFormElements.fields){
+                var minformHeight = $scope.previewFormElements.fields.length*formLineHeight<=60?100:$scope.previewFormElements.fields.length*formLineHeight;
+                $scope.newFormHeight = $scope.previewFormElements.fields.length*formLineHeight<=window.outerHeight?minformHeight:window.outerHeight;
+                var childHeight;
+                // console.log($scope.previewFormElements.fields)
+                angular.forEach($scope.previewFormElements.fields,function(Pvalue,Pindex){
+                    if(Pvalue.children.length>0){
+                        angular.forEach(Pvalue.children,function(Cvalue,Cindex){
+                            $scope.newFormHeight += formLineHeight;
+                        })
+                    }
+                });
+            }
+            $scope.oldHeight = angular.copy($scope.newFormHeight);
+            $scope.newFormHeight = $scope.newFormHeight>window.outerHeight?window.outerHeight*.8:$scope.newFormHeight;
         };
         $scope.rowActive = function(row){
             $scope.loop($scope.callbackRemoveActive);
@@ -853,37 +1134,23 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 })
             })
         };
-        $scope.fooElement = document.getElementById('scrollMe');
-        $scope.fooElement2 = document.getElementById('timePointsHeader');
-        $scope.grid = document.getElementById('scrollGrid');
         $scope.fixMe = function(){
             console.log('bar')
             return $scope.foo
         };
-        angular.element($scope.fooElement).bind("scroll",function(){
-            $scope.fooElement2.left=$scope.gridPos.left;
-        });
-        angular.element($scope.fooElement2).bind("scroll",function(){
-            var docLeft = $("#timePointsHeader").scrollLeft()-3;
-            var docTop = $("#timePointsHeader").scrollTop();
-            if ($scope.gridPos.left !== docLeft){
-                // $scope.startScroll(docLeft,docTop)
-            }
-            $timeout.cancel(timer);
-            var timer = $timeout(function(){
-                // $scope.stopScroll(docLeft,docTop);
-            },100);
-        });
+
+
         $('html').addClass('hideOverflow');
         $(function(){
-            $("#scrollMe").scroll(function(){
-                $("#timePointsHeader")
-                    .scrollLeft($("#scrollMe").scrollLeft());
+            $('#scrollMe1').scroll(function(){
+                console.log('scroll')
+                $('#timePointsHeader1')
+                    .scrollLeft($('#scrollMe1').scrollLeft());
+
+                $('#timePointsHeader2')
+                    .scrollLeft($('#scrollMe1').scrollLeft());
             });
-            $("#timePointsHeader").scroll(function(){
-                $("#scrollMe")
-                    .scrollLeft($("#timePointsHeader").scrollLeft());
-            });
+
         });
         console.log($scope)
     })
@@ -912,7 +1179,8 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 $scope.loggedIn = httpService.checkCookie('ARC_UserToken')!='';
 
                 angular.forEach($route.routes, function (value, key) {
-                    value.url = "#" + value.originalPath;
+                    // value.url = "#" + value.originalPath;
+                    value.url = "#!" + value.originalPath;
                     if (value.name != undefined) {
                         $scope.routesArray.push(value)
                     }
@@ -945,10 +1213,11 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             var fieldObject = {}
             // fieldObject.fieldDataType = field.fieldDataType.toLowerCase();
             fieldObject.fieldArray = [];
-            console.log(field)
+            // console.log(field)
             switch(field.fieldDataType.toLowerCase()){
                 case 'list':
                     fieldObject.fieldArray[0] = {
+                        value:field.value?field.value:'',
                         cat:'select',
                         type:'select',
                         options:[]
@@ -960,6 +1229,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     break;
                 case 'yes/no':
                     fieldObject.fieldArray[0] = {
+                        value:field.value?field.value:'',
                         cat:'radio',
                         type:'radio',
                         placeholder:'',
@@ -967,7 +1237,12 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     };
                     break;
                 case 'datetime':
+                    if(field.value||moment(field.value,"YYYY-MM-DD")._isValid)
+                        if (typeof field.value === 'string')
+                        field.value = field.value.split('/')[2]+'-'+field.value.split('/')[0]+'-'+field.value.split('/')[1];
+                    field.value = moment(field.value,"YYYY-MM-DD");
                     fieldObject.fieldArray[0] = {
+                        value:field.value?field.value._i:'',
                         cat:'text',
                         placeholder:'date',
                         type:'date'
@@ -975,6 +1250,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     break;
                 case 'float':
                     fieldObject.fieldArray[0] = {
+                        value:field.value?parseInt(field.value):'',
                         cat:'text',
                         placeholder:'float',
                         type:'number'
@@ -982,6 +1258,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     break;
                 case 'int':
                     fieldObject.fieldArray[0] = {
+                        value:field.value?parseInt(field.value):'',
                         cat:'text',
                         placeholder:'int',
                         type:'number'
@@ -989,6 +1266,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     break;
                 case 'group':
                     fieldObject.fieldArray[0] = {
+                        value:field.value?field.value:'',
                         cat:'text',
                         placeholder:'',
                         type:'hidden',
@@ -997,24 +1275,28 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     break;
                 case 'boolean':
                     fieldObject.fieldArray[0] = {
+                        value:field.value?field.value:'',
                         cat:'boolean',
                         type:'checkbox'
                     };
                     break;
                 case 'labvalue':
                     fieldObject.fieldArray[0] = {
+                        value:field.value?parseInt(field.value):'',
                         label:'value',
                         placeholder:'int',
                         cat:'labvalue',
                         type:'number'
                     };
                     fieldObject.fieldArray[1] = {
+                        value:field.value?field.value:'',
                         label:'unit',
                         placeholder:'text',
                         cat:'labvalue',
                         type:'text'
                     };
                     fieldObject.fieldArray[2] = {
+                        value:field.value?field.value:'',
                         label:'range',
                         placeholder:'number range',
                         cat:'labvalue',
@@ -1024,6 +1306,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     break;
                 case 'string':
                     fieldObject.fieldArray[0] = {
+                        value:field.value?field.value:'',
                         cat:'text',
                         type:'text'
                     };
@@ -1031,8 +1314,8 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 default:
             }
 
-            fieldObject.fieldArray[0].label = field.label||field.name;
-            fieldObject.fieldArray[0].name = field.name;
+            fieldObject.fieldArray[0].label = field.label||field.name||field.fieldName;
+            fieldObject.fieldArray[0].name = field.name||field.fieldName;
             return fieldObject;
         };
         typeWorker.somethingCallback=function(field){

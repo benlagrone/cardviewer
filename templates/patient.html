@@ -1,4 +1,3 @@
-
 <div id="activitiesHeader" class="row">
     <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2" style="padding:7px 10px;">
         <h5>Patient Activites</h5>
@@ -50,16 +49,37 @@
         </div>
     </div>
     <div class="col-md-3 col-sm-3 col-xs-3 col-lg-3">
-        <a ng-click="submitSearch()" class="btn btn-success waves-effect waves-light">Submit</a>
+        <a
+                ng-click="submitSearch()"
+                style="z-index:0;"
+                class="btn btn-success waves-effect waves-light">Submit</a>
+
+        <span class="fa-stack fa-lg"
+              style="padding-top: 4px;">
+                    <i class="fa fa-square-o fa-stack-2x"></i>
+
+             <i class="fa fa-bar-chart"
+                title="Launch Reporting"
+                ng-click="launchReporting()"
+                aria-hidden="true"
+                style="position: relative;
+                left: 22%;
+                cursor:pointer;"
+             ></i>
+
+                </span>
+
     </div>
 </div>
 
-<div id="timePointsTitle" class="row">
-    <div id="scrollMe"
+<div id="timePointsTitle" class="row" >
+    <div id="scrollMe1"
          class="col-md-12 col-sm-12 col-xs-12 col-lg-12"
          style="white-space: nowrap;overflow-x:scroll;">
-        <h5 id="titleScroll" style="height:25px;width:{{timePoints.length*timePointsWidth}}px">
-            <span style="position:fixed;" class="title">Patient Timepoints</span>
+        <h5 class="titleScroll" style="height:25px;width:{{timePoints.length*timePointsWidth}}px">
+            <span ng-if="!toggleReportView" style="position:fixed;" class="title">Patient Timepoints</span>
+
+            <span  ng-if="toggleReportView" style="position:fixed;" class="title">Reports</span>
         </h5>
         <div id="" class="row">
             <div id="" class="col-md-2 col-sm-2 col-xs-2 col-lg-2"></div>
@@ -73,43 +93,402 @@
                     <ul>
             </div>
         </div>
-        
+
 
     </div>
 </div>
 
-<div id="timePoints" class="row">
+<div id="timePoints" class="row" ng-if="!toggleReportView">
     <div id="activityRowheader" class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
         <ul ng-if="timeData.activityRowHeaders">
-
             <li ng-repeat="title in timeData.activityRowHeaders">
                 <span>{{title.name}}</span>
             </li>
         </ul>
     </div>
-    <div id="timePointsHeader"
+    <div id="timePointsHeader1"
          class="col-md-10 col-sm-10 col-xs-10 col-lg-10"
          style="height:{{availHeight-260}}px;">
-        <ul id="scrollGrid" class="" style="width:{{timePoints.length*91}}px;">
+        <ul class="scrollGrid" class="" style="width:{{timePoints.length*91}}px;">
 
-            <li ng-repeat="point in timeData.dataGrid" >
+            <li ng-repeat="point in timeData.dataGrid">
                 <ul class="dataRows">
                     <li ng-repeat="row in point.valueArray"
                         ng-click="revealHide(row);rowActive(row);"
                         class="{{row.required?'required':''}} {{row.active?'active':'inactive'}}">
-<div>
+                        <div>
 
                             <i ng-if="row.value"
                                data="row.activityID"
                                class="fa {{row.icon}}"
                                style="color:{{row.color}}"
                                aria-hidden="true">
-                        </i>
-</div>
+                            </i>
+                        </div>
                     </li>
                 </ul>
             </li>
         </ul>
+    </div>
+</div>
+
+<div id="reportsView" class="row" ng-if="toggleReportView">
+    <div id="activityRowheader" class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
+        <ul ng-if="timeData.fieldsReport">
+            <li ng-repeat="title in timeData.fieldsReport">
+                <span>{{title.fieldName}}</span>
+            </li>
+        </ul>
+    </div>
+    <div id="timePointsHeader2"
+         class="col-md-10 col-sm-10 col-xs-10 col-lg-10"
+         style="height:{{availHeight-260}}px;">
+        <ul class="scrollGrid" class="" style="width:100%;">
+            <li ng-repeat="point in timeData.reportsGrid">
+                <ul class="dataRows">
+                    <li ng-repeat="row in point.valueArray"
+                        class="">
+                        <div ng-if="row.value">{{row.value}}</div>
+
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+<div id="drawerRow"
+     ng-hide="hideDrawer"
+     class="row animate-hide {{hideDrawer!=false?'':'active'}}">
+    <style>
+        .data-rows {
+            padding-bottom: 18px;
+        }
+    </style>
+    <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
+        <div class="row">
+            <div class="col-md-8 col-sm-8 col-xs-8 col-lg-8" ng-hide="!hideFieldSearch">
+                <h5 ng-click="showFieldSearch()">Available Fields</h5>
+            </div>
+            <div id="searchFieldsControls1"
+                 class="searchFieldsControls col-md-4 col-sm-4 col-xs-4 col-lg-4"
+                 ng-hide="!hideFieldSearch"
+                 style="padding-top:4px">
+                <span class="fa-stack fa-lg" ng-click="showFieldSearch()">
+                  <i class="fa fa-circle fa-stack-2x" style="color:silver;"></i>
+                  <i class="fa fa-search fa-stack-1x fa-inverse"></i>
+                </span>
+                <span>
+                <span class="fa-stack fa-lg"
+                      ng-hide="!hideDrawer">
+                  <i class="fa fa-square fa-stack-2x"></i>
+                  <i class="fa {{drawerSymbol}} fa-stack-1x fa-inverse"
+                     ng-mouseleave="drawerMouseLeave()"
+                     ng-mouseover="drawerMouseOver()"
+                     ng-click="hideDrawer=!hideDrawer"
+                     aria-hidden="true"
+                  ></i>
+                </span>
+                    <i
+                            class="fa {{closeDrawerSymbol}}"
+                            ng-hide="hideDrawer"
+                            ng-mouseleave="closeDrawerMouseLeave()"
+                            ng-mouseover="closeDrawerMouseOver()"
+                            ng-click="showDrawerClose();clearWorkingActivity()"
+                            aria-hidden="true"
+                            style="
+                                color: #F44336;
+                                font-size: 2.5rem;
+                            ">
+                    </i>
+                </span>
+                <i ng-click="generateReport();"
+                   value="Save"
+                   type="submit"
+                   class="fa fa-paper-plane fa-2x" aria-hidden="true" style="color:#4CAF50;"></i>
+            </div>
+            <div id="searchFields-wrap"
+                 ng-hide="hideFieldSearch"
+                 class="col-md-8 col-sm-8 col-xs-8 col-lg-8">
+                <input ng-model="searchFields"
+                       uib-typeahead="items.name for items in fields | filter:$viewValue | limitTo:8"
+                       class="form-control"
+                       aria-label="Search"
+                       placeholder="&#xf002;"
+                       aria-autocomplete="both"
+                       aria-haspopup="true"
+                       spellcheck="false"
+                       type="text"
+                       tabindex="0"
+                       id="searchFields">
+            </div>
+            <style>
+                #searchFieldsControls2 ul li{
+                    display:inline;
+                }
+                #searchFieldsControls2 ul{
+                     position: relative;
+                     left: 25px;
+
+                    margin-top: -5px;
+
+                }
+            </style>
+            <div ng-hide="hideFieldSearch"
+                 id="searchFieldsControls2"
+                 class="searchFieldsControls col-md-4 col-sm-4 col-xs-4 col-lg-4">
+                <ul>
+                    <li>
+                        <i class="fa fa-times"
+                           ng-hide=""
+                           ng-mouseleave=""
+                           ng-mouseover=""
+                           ng-click="closeFieldsSearch()"
+                           aria-hidden="true"
+                           style="">
+                        </i>
+                    </li>
+                    <li>
+                <span>
+                <span class="fa-stack fa-lg"
+                      ng-hide="!hideDrawer">
+                  <i class="fa fa-square fa-stack-2x"></i>
+                  <i class="fa {{drawerSymbol}} fa-stack-1x fa-inverse"
+                     ng-mouseleave="drawerMouseLeave()"
+                     ng-mouseover="drawerMouseOver()"
+                     ng-click="hideDrawer=!hideDrawer"
+                     aria-hidden="true"
+                  ></i>
+                    </span>
+                        <i
+                                class="fa {{closeDrawerSymbol}}"
+                                ng-hide="hideDrawer"
+                                ng-mouseleave="closeDrawerMouseLeave()"
+                                ng-mouseover="closeDrawerMouseOver()"
+                                ng-click="showDrawerClose();clearWorkingActivity()"
+                                aria-hidden="true"
+                                style="
+                                    color: #F44336;
+                                    font-size: 2.5rem;
+                                ">
+                        </i>
+                    </span>
+                    </li>
+                    <li>
+                        <i ng-click="generateReport();"
+                           value="Save"
+                           type="submit"
+                           class="fa fa-paper-plane fa-2x" aria-hidden="true" style="color:#4CAF50;"></i>
+
+                    </li>
+                </ul>
+
+
+            </div>
+
+        </div>
+        <div class="row" ng-show="workingActivity!=undefined">
+            <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
+                <h6>Add Fields to {{workingActivity.name?workingActivity.name:'New Activity'}}</h6>
+            </div>
+        </div>
+        <div class="fields" class="row">
+            <div
+                    ng-repeat="items in fields | filter:searchFields"
+                    ng-hide="items.hideRow"
+                    class="col-md-12 col-sm-12 col-xs-12 col-lg-12 {{items.hide?'':'active'}}"
+            >
+                <div class="row fieldControls">
+                    <div class="col-md-1 col-sm-1 col-xs-1 col-lg-1">
+                        <i title="Click to include this Field"
+                           class="fa fa-square-o"
+                           aria-hidden="true"
+                           ng-click="items.showIncluded=!items.showIncluded;addThisFieldToActivity($event,items)"
+                           data="add"
+                           ng-if="!items.block"
+                           ng-show="!items.showIncluded;"></i>
+                        <i title="Click to remove this Field"
+                           class="fa fa-check-square"
+                           aria-hidden="true"
+                           ng-click="items.showIncluded=!items.showIncluded;addThisFieldToActivity($event,items)"
+                           data="remove"
+                           ng-if="!items.block"
+                           ng-show="items.showIncluded;"></i>
+                        <!--<i title="This Field can not be added"-->
+                        <!--class="fa fa-ban"-->
+                        <!--aria-hidden="true"-->
+                        <!--ng-click=""-->
+                        <!--data=""-->
+                        <!--style="color:orange;"-->
+                        <!--ng-show="items.block"></i>-->
+                    </div>
+                    <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6">
+                        <h6>{{items.name}}</h6>
+                        <!--<h6 ng-click="items.hide=!items.hide">{{items.name}}</h6>-->
+                    </div>
+                    <div class="col-md-5 col-sm-5 col-xs-5 col-lg-5">
+                        <ul class="controls" ng-hide="items.hide">
+                            <li ng-if="enableFeature.copyField">
+                                <span class="edit-copy fa-stack fa-lg">
+                                    <i class="fa fa-square fa-stack-2x"></i>
+                                    <i title="Copy this Activity"
+                                       ng-click="addNewField(items)"
+                                       class="fa fa-files-o fa-stack-1x"
+                                       style="color:white;"></i>
+                                </span>
+                            </li>
+                            <li ng-hide="items.hide">
+                                <i ng-click="openEditField(items);items.edit=!items.edit"
+                                   class="fa fa-pencil-square fa-2x"
+                                   aria-hidden="true"></i>
+                            </li>
+                            <li ng-hide="items.hide">
+                                <i class="fa fa-minus-square fa-2x"
+                                   ng-click="removeItem(items)"
+                                   style="color:#D50000;"
+                                   aria-hidden="true"></i>
+                            </li>
+                            <li ng-hide="items.hide">
+                                <i ng-click="submitFieldChanges(items)" ng-hide="!items.edit"
+                                   class="fa fa-paper-plane fa-2x" aria-hidden="true" style="color:#4CAF50;"></i>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <ul class="animate-hide data-rows" ng-hide="items.hide">
+                    <li ng-if="items.instructions || items.edit">
+                        <span class="label">instructions</span>
+                        <span ng-hide="items.edit" class="field">{{items.instructions}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                            <input ng-model="items.instructions"/>
+                       </span>
+                    </li>
+
+                    <li ng-if="items.categoryName || items.edit">
+
+                        <md-checkbox
+                                ng-model="items.canBeAutomated"
+                                id="canBeAutomated"
+                                aria-label="canBeAutomated">
+                            Can Be Automated
+                        </md-checkbox>
+
+
+                        <input type="checkbox"
+                               ng-model="items.canBeAutomated"
+                               style="position: relative; visibility: visible;;left:0px;"
+
+                               [ng-false-value="items.categoryName='00000000-0000-0000-0000-000000000000'" ]
+                        >
+                    </li>
+
+                    <li ng-if="items.categoryName || items.edit || items.canBeAutomated"
+                        ng-show="items.canBeAutomated">
+                        <span class="label">categoryName</span>
+                        <span ng-hide="items.edit" class="field">{{items.categoryName}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                            <select ng-model="items.categoryName"
+                                    ng-options="options.id as options.name for options in fieldCategories">
+                            </select>
+                       </span>
+                    </li>
+                    <li ng-if="items.fieldDataType || items.edit">
+                        <span class="label">Data Type</span>
+                        <span ng-hide="items.edit" class="field">{{getFieldDataType(items.fieldDataType)}}</span>
+                        <span ng-hide="!items.edit" class="field">
+                            <select
+                                    ng-model="items.fieldDataType"
+                                    ng-options="options.id as options.name for options in dataTypesList">
+                            </select>
+                        </span>
+                    </li>
+
+                    <li ng-if="items.categoryName || items.edit"
+                        ng-show="items.fieldDataType==='41666179-7d33-4af0-9ab3-05f7385c110c'">
+                        <span class="label">List Type</span>
+                        <span ng-hide="items.edit" class="field">{{items.categoryName}}</span>
+                        <span ng-hide="!items.edit" class="field">
+
+                            <select ng-model="items.listId"
+                                    ng-options="options.id as options.name for options in listList">
+                            </select>
+
+                       </span>
+                    </li>
+
+                    <li ng-if="items.categoryName || items.edit"
+                        ng-show="items.listId==='new'"
+                    >
+                        <form ng-if="items.categoryName || items.edit"
+                              ng-show="items.listId==='new'"
+                              id="newFieldType"
+                              name="newFieldType">
+                            <ul>
+                                <li>
+                                    <h7>Add New List</h7>
+                                </li>
+                                <li>
+                                    <i ng-click="submitNewList()"
+                                       class="fa fa-paper-plane fa-2x"
+                                       aria-hidden="true" style="color: rgb(76, 175, 80);"></i>
+                                </li>
+                            </ul>
+                            <ul>
+                                <li>
+
+                                    <span class="label">Name </span>
+                                    <span class="input">
+                                        <input ng-model="newField.name">
+                                    </span>
+                                </li>
+                                <li>
+                                    <h8>Add List Items</h8>
+                                </li>
+                                <li>
+                                    <a ng-click="addMoreFields()">
+                                        <i class="fa fa-plus-square" aria-hidden="true"></i>
+                                        Add a field to your new List
+                                    </a>
+                                </li>
+                                <li ng-repeat="(fieldFieldIndex,field) in newField.fields">
+                                    <ul>
+
+                                        <li>
+
+                                            <span class="label">{{fieldFieldIndex+1}}: Name</span>
+                                            <span class="input">
+                                        <input ng-model="field.name">
+                                    </span>
+                                        </li>
+                                        <li>
+                                            <span class="label">Description </span>
+                                            <span class="input">
+                                        <input ng-model="field.description">
+                                    </span>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </form>
+
+                    </li>
+
+                    <li ng-if="items.childFields.length>0">
+                        <span class="label" style="float:left;">Child Fields</span>
+                        <ul>
+                            <li class="childFields"
+                                ng-repeat="childField in items.childFields"
+                                ng-class="{'last':$last}"
+                                style="float:left">
+                                <span>&nbsp;{{childField.name}}</span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
     </div>
 </div>
 
@@ -125,36 +504,45 @@
                         .css-form input.ng-invalid.ng-touched {
                             background-color: #FA787E;
                         }
+
                         .css-form input.ng-valid.ng-touched {
                             background-color: #78FA89;
                         }
+
                         ul.data-rows {
-                            overflow-y: scroll;
-                            height: 728px;
+                            /*overflow-y: scroll;*/
+                            /*height: 728px;*/
                             width: 100%;
                             display: flex;
                             flex-wrap: wrap;
                         }
-                        ul.data-rows li{
-                            width:200px!important;
+
+                        ul.data-rows li {
+                            width: 200px !important;
                         }
-                        ul.data-rows .label,div ul.data-rows .field{
-                            width:100%!important;
+
+                        ul.data-rows .label, div ul.data-rows .field {
+                            width: 100% !important;
                         }
                     </style>
-                    <form name="newField" novalidate class="css-form">
+                    <form name="newField" class="css-form">
                         <div class="row fieldControls">
                             <div class="col-md-10 col-sm-10 col-xs-10 col-lg-10">
-                                <h6>Enter Data for {{formElements.name}} {{formElements.timePointName?'in':'...'}} {{formElements.timePointName}}</h6>
+                                <h6>Enter Data for {{previewFormElements.name}}
+                                    {{previewFormElements.timePointName?'in':'...'}}
+                                    {{previewFormElements.timePointName}}</h6>
                             </div>
                             <div class="col-md-2 col-sm-2 col-xs-2 col-lg-2">
                                 <ul class="controls">
+
+
                                     <li>
                                         <i ng-click="revealHide()"
-                                           class="fa fa-trash fa-2x"
-                                           style="color:#D50000;"
+                                           title="Close Preview"
+                                           class="fa fa-eye-slash fa-2x" style="color:#D50000;"
                                            aria-hidden="true"></i>
                                     </li>
+
                                     <li>
                                         <i ng-click="revealHide();postData();"
                                            value="Save"
@@ -175,50 +563,66 @@
                                 display: flex;
                                 flex-wrap: wrap;
                             }
+
                             ul#preview.data-rows li {
                                 width: 200px !important;
                             }
+
                             ul#previewl.data-rows .label, div ul.data-rows .field {
                                 width: 100% !important;
                             }
-                            .labvalue{
-                                width:27%;float:left;
+
+                            .labvalue {
+                                width: 27%;
+                                float: left;
                             }
-                            .childList{
-                                margin-left:1%;
+
+                            .childList {
+                                margin-left: 1%;
                             }
-                            .previewRow{
+
+                            .previewRow {
                                 clear: both;
                             }
-                            li.previewRow.Group{
-                                width: 100%!important;
+
+                            li.previewRow.Group {
+                                width: 100% !important;
 
                             }
-                            li.previewRow.Group > div > ul{
+
+                            li.previewRow.Group > div > ul {
                                 display: flex;
                                 flex-wrap: wrap;
                             }
-                            li.previewRow.Group select{
-                                width:95%;
+
+                            li.previewRow.Group select {
+                                width: 95%;
                             }
                         </style>
 
                         <ul id="preview"
                             ng-hide="addNewList"
                             ng-if="previewFormElements.fields.length>0"
-                            class="animate-hide data-rows"
-                            style="overflow-y: {{oldHeight>=availHeight?'scroll':'hidden'}};height:{{newFormHeight>=availHeight?availHeight*85:newFormHeight}}px;max-height:85%;"
+                            class="data-rows"
+                            style="overflow-y: {{oldHeight>=availHeight?'scroll':'hidden'}};
+                            height:{{newFormHeight>=availHeight?availHeight*85:newFormHeight}}px;
+                            max-height:85%;
+                            min-height:220px;"
                         >
                             <li ng-repeat="form in previewFormElements.fields"
+                                ng-init="formIndex=$index"
                                 class="previewRow {{form.fieldDataType}}"
                                 style="{{form.fieldDataType==='Group'?'width: 100%!important;':''}}
-                            {{form.fieldDataType==='LabValue'?'width:60%!important;':''}}
-">
+                            {{form.fieldDataType==='LabValue'?'width:60%!important;':''}}"
+                            >
                                 <div ng-repeat="inputField in form.formElements.fieldArray"
-                                     class="{{inputField.type==='hidden'?'select':inputField.type}} {{inputField.cat}} {{inputField.name}}">
-                                <span ng-if="inputField.cat!='boolean'" class="label"
+                                     ng-init="inputFieldIndex=$index"
+                                     class="{{inputField.type==='hidden'?'select':inputField.type}}
+                                     {{inputField.cat}} {{inputField.name}}">
+                                <span ng-if="inputField.cat!='boolean'"
+                                      class="label"
                                       style="line-height: 1.7REM;">
-                                     {{inputField.label}}
+                                     {{formIndex}} {{inputFieldIndex}} {{inputField.label}} {{inputField.value}}
                                 </span>
                                     <span class="field ">
                                     <input
@@ -227,71 +631,91 @@
                                             width:95%;
                                             margin:0 0 5px 0;
                                             height:1.5REM;"
+                                            ng-model="inputField.value"
                                             type="{{inputField.type}}"
                                             placeholder="{{inputField.placeholder}}"
                                     />
                                     </span>
                                     <span ng-if="inputField.cat==='boolean'" class="form-group">
                                     <input
-                                            ng-model=""
+
                                             type="checkbox"
                                             id="{{inputField.name}}"
+                                            value="{{inputField.value}}"
+                                            ng-model="inputField.value"
                                             class="">
                                     <label for="{{inputField.name}}">{{inputField.cat!='labvalue'?inputField.name:inputField.label}}</label>
                                 </span>
                                     <ul class="childList"
                                         ng-if="inputField.children.forms.length>0">
-                                        <li ng-repeat="childField in inputField.children.forms">
-                                            <div ng-repeat="childInputField in childField.fieldArray"
+                                        <li ng-repeat="childField in inputField.children.forms"
+                                            ng-init="childFieldIndex=$index">
+                                            <div ng-repeat="(myIndex,childInputField) in childField.fieldArray"
+                                                 ng-init="childInputFieldIndex=$index"
                                                  class="childField {{childInputField.type}} {{childInputField.cat}}">
-                                            <span class="label"
-                                                  style="line-height: 1.2REM;">
-                                                <i class="fa fa-level-up fa-rotate-90 "
-                                                   aria-hidden="true">
+                                                <span class="label"
+                                                      style="line-height: 1.2REM;">
+                                                    <i class="fa fa-level-up fa-rotate-90 "
+                                                       aria-hidden="true">
 
-                                                </i>
-                                                {{childInputField.cat!='labvalue'?childInputField.name:childInputField.label}}
-                                            </span>
+                                                    </i>
+                                                {{formIndex}}
+                                                    {{inputFieldIndex}}
+                                                    {{childFieldIndex}}
+                                                    {{childInputFieldIndex}}
+                                                    {{childInputField.cat!='labvalue'?childInputField.name:childInputField.label}}
+                                                    {{childInputField.value}}
+                                                </span>
                                                 <span class="field">
-                                                <select
-                                                        ng-if="childInputField.cat==='select'"
-                                                        ng-options="option as option.name for option in childInputField.options"
-                                                        ng-model="selected"
-                                                ></select>
-                                                <input ng-if="childInputField.cat==='text'"
-                                                       name="{{childInputField.name}}"
-                                                       placeholder="{{childInputField.placeholder}}"
-                                                       style="
-                                                        border:1px solid silver;
-                                                        width:95%;
-                                                        margin:0 0 5px 0;
-                                                        height:1.5REM;"
-                                                       type="{{childInputField.type}}"/>
-                                                <div ng-if="childInputField.cat==='labvalue'">
+                                                    <select
+                                                            ng-if="childInputField.cat==='select'"
+                                                            ng-model="childInputField.value"
+                                                    >
+                                                        <option value="{{selectOption.id}}"
+                                                                ng-repeat="selectOption in childInputField.options">{{selectOption.name}}</option>
+                                                    </select>
+                                                    <input ng-if="childInputField.cat==='text'"
+                                                           ng-scope="formData.{{inputField.childInputField.name}}"
+                                                           name="{{childInputField.name}}"
+                                                           placeholder="{{childInputField.placeholder}}"
+                                                           ng-model="childInputField.value"
+                                                           style="
+                                                            border:1px solid silver;
+                                                            width:95%;
+                                                            margin:0 0 5px 0;
+                                                            height:1.5REM;"
+                                                           type="{{childInputField.type}}"/>
+                                                    <div ng-if="childInputField.cat==='labvalue'">
 
-                                               <input ng-if="childInputField.cat==='labvalue'"
-                                                      placeholder="{{childInputField.placeholder}}"
-                                                      name="{{childInputField.name}}"
-                                                      style="
-                                                                                    border:1px solid silver;
-                                                                                    width:95%;
-                                                                                    margin:0 0 5px 0;
-                                                                                    height:1.5REM;"
-                                                      type="{{childInputField.type}}"/>
-
-
-                        <span ng-if="childInputField.cat==='boolean'" class="form-group">
-                            <input
-                                    ng-model=""
-                                    type="checkbox"
-                                    id="{{childInputField.name}}"
-                                    class="">
-                            <label for="{{childInputField.name}}">{{childInputField.cat!='labvalue'?childInputField.name:childInputField.label}}</label>
-                        </span>
+                                                       <input ng-if="childInputField.cat==='labvalue'"
+                                                              placeholder="{{childInputField.placeholder}}"
+                                                              ng-scope="formData.{{inputField.childInputField.name}}"
+                                                              ng-model="childInputField.value"
+                                                              name="{{childInputField.name}}"
+                                                              style="
+                                                                                            border:1px solid silver;
+                                                                                            width:95%;
+                                                                                            margin:0 0 5px 0;
+                                                                                            height:1.5REM;"
+                                                              type="{{childInputField.type}}"/>
 
 
-                                                </div>
-                                            </span>
+                                                        <span ng-if="childInputField.cat==='boolean'"
+                                                              class="form-group">
+                                                            <input
+                                                                    type="checkbox"
+                                                                    id="{{childInputField.name}}"
+                                                                    ng-scope="formData.{{inputField.childInputField.name}}"
+                                                                    ng-model="childInputField.value"
+                                                                    class="">
+                                                            <label for="{{childInputField.name}}">
+                                                                {{childInputField.cat!='labvalue'?childInputField.name:childInputField.label}}
+                                                            </label>
+                                                        </span>
+
+
+                                                    </div>
+                                                </span>
                                             </div>
                                         </li>
                                     </ul>
@@ -299,11 +723,13 @@
                             </li>
                         </ul>
 
-                        <ul ng-if="previewFormElements.fields.length<1" class="animate-hide data-rows"
-                            style="overflow-y: {{newFormHeight>=availHeight?'scroll':'hidden'}};height:{{newFormHeight}}px;"
+                        <ul ng-if="!previewFormElements.fields"
+                            class="data-rows"
+                            style="overflow-y: {{newFormHeight>=availHeight?'scroll':'hidden'}};
+                            height:300px;"
                         >
                             <li>
-                                <h7>This Activity has no Fields</h7>
+                                <h7>{{previewFormElements.fieldsMessage}}</h7>
                             </li>
                         </ul>
                         </ul>
