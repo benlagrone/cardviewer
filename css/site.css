@@ -297,7 +297,8 @@ input#searchFields:-moz-placeholder { /* Firefox 18- */
 }
 #drawerRow #searchFieldsControls2{
     position: relative;
-    top: 8px;
+    top: 15px;
+    right: 20px;
 }
 #drawerRow input#searchFields{
     background-color: silver;
@@ -335,12 +336,12 @@ input#searchFields:-moz-placeholder { /* Firefox 18- */
 .activitySelector li{
     display:inline;
 }
-#timePointsHeader{
+#timePointsHeader1,#timePointsHeader2{
     overflow-x:scroll;
 
     white-space: nowrap;
 }
-#timePointsHeader > ul > li{
+#timePointsHeader1 > ul > li,#timePointsHeader2 > ul > li{
     display:inline-block;
     min-width:87px;
     border:1px solid silver;
@@ -353,20 +354,18 @@ input#searchFields:-moz-placeholder { /* Firefox 18- */
     background-color:white;
     min-height:33px;
 }
-#timePointsTitle li{
+#timePointsTitle li, #reportsTitle li{
     display: inline-block;
     min-width: 87px;
     border: 1px solid silver;
     padding: 1px;
     background-color: white;
     min-height: 33px;
-}
-#timePointsTitle li{
     border-bottom: 5px solid #787878;
     border-top: 5px solid #787878;
     height: 150px;
 }
-#timePointsTitle li > span{
+#timePointsTitle li > span, #reportsTitle li > span{
     word-wrap: break-word;
     width: 140px;
     height: 65px;
@@ -374,7 +373,7 @@ input#searchFields:-moz-placeholder { /* Firefox 18- */
     white-space: normal;
     transform: rotate(270deg);
 }
-#timePointsTitle li > span > span{
+#timePointsTitle li > span > span,#reportsTitle li > span > span{
     position: relative;
     right: 30px;
     bottom: 25px;
@@ -407,13 +406,13 @@ input#searchFields:-moz-placeholder { /* Firefox 18- */
 html.hideOverflow{
     overflow-y:hidden;
 }
-#titleScroll .title{
+.titleScroll .title{
 
 }
-#scrollGrid{
+.scrollGrid{
     margin-left: -13px;
 }
-#scrollGrid ul li > div{
+.scrollGrid ul li > div{
     position:absolute;
 }
 li:first-child > ul.dataRows {
