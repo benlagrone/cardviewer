@@ -1,24 +1,25 @@
 angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','ngAnimate','ui.bootstrap','angularMoment','angular-sortable-view'])
     .controller('homeController', function ($scope,httpService) {
-        httpService.getSomething().then(function(response){
-            console.log(response)
-            $scope.something = response.data
-        },function errorCallback(response){
-            console.log(response)
-        })
+//        httpService.getSomething().then(function(response){
+//            console.log(response)
+//            $scope.something = response.data
+//        },function errorCallback(response){
+//            console.log(response)
+//        })
         $scope.message = 'Hello Home';
         $scope.foo = null;
 
         var data = null;
 
-    })
-    .controller('loginController',function($scope,httpService,$location,$cookies){
+    })    .controller('loginController',function($scope,httpService,$location,$cookies){
         $scope.user = {
             userName:'',
             password:''
         };
         $scope.login = function(){
+            console.log($scope.user)
             httpService.getLogin($scope.user).then(function(response){
+                console.log(respose)
                 if(response.data.status===true){
                     $cookies.put('ARC_UserToken',response.data.token)
                     $location.path('/home')
@@ -26,7 +27,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             })
         }
     })
-    .controller('configureController',function($timeout,$scope,httpService,localStorageService,moment,buildFormService){
+ .controller('configureController',function($timeout,$scope,httpService,localStorageService,moment,buildFormService){
         function getItem(key) {
             return localStorageService.get(key);
         }
@@ -893,7 +894,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
     .controller('requestaccountController',function($scope,httpService){
 
     })
-    .directive('navigation', function ($route,logoutService,trackPageAccess,httpService,$location,localStorageService) {
+    .directive('navigation', function ($route,logoutService,httpService,$location,localStorageService) {
         return {
             restrict: 'E',
             templateUrl: 'templates/components/navigation.html',
@@ -909,8 +910,10 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                 $scope.logOut = function(){
                     logoutService.logout()
                 };
-                $scope.loggedIn = httpService.checkCookie('ARC_UserToken')!='';
+                
+//                $scope.loggedIn = httpService.checkCookie('ARC_UserToken')!='';
 
+    $scope.loggedIn = true;
                 angular.forEach($route.routes, function (value, key) {
                     value.url = "#" + value.originalPath;
                     if (value.name != undefined) {
@@ -918,10 +921,13 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                     }
                 });
 
+console.log('check2')
                 $scope.$location = location;
                 $scope.$on("$routeChangeSuccess",function(event,current,previous){
-                    $scope.loggedIn = httpService.checkCookie('ARC_UserToken')!='';
-                    trackPageAccess.postData();
+//                    $scope.loggedIn = httpService.checkCookie('ARC_UserToken')!='';
+//                    trackPageAccess.postData();
+                    
+    $scope.loggedIn = true;
                     httpService.getUser().then(function(response){
                         $scope.userInfo = response.data;
                         function submit(key, val) {
@@ -929,8 +935,8 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
                         }
                         submit('userName',$scope.userInfo.fullName);
                         submit('userId',$scope.userInfo.id);
-                        submit('departmentId',$scope.userInfo.departmentId);
-                        submit('departmentNiceName',$scope.userInfo.departmentNiceName);
+//                        submit('departmentId',$scope.userInfo.departmentId);
+//                        submit('departmentNiceName',$scope.userInfo.departmentNiceName);
                     },function errorCallback(response){
                         // console.log(response)
                     });
@@ -1062,7 +1068,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         var httpWorker = {};
         httpWorker.getSomething = function(){
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+//                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 httpWorker.checkAuthLogOut();
                 return $http({
                     method:'GET',
@@ -1078,7 +1084,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         };
         httpWorker.postData = function(path1,data){
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+//              httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 httpWorker.checkAuthLogOut();
                 return $http({
                     method:'POST',
@@ -1095,7 +1101,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             param = param?param:'';
             //path2 = path2?path2:'';
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+//                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 httpWorker.checkAuthLogOut();
                 return $http({
                     method:'PUT',
@@ -1112,7 +1118,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             param = param?param:'';
             path2 = path2?path2:'';
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+//                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 httpWorker.checkAuthLogOut();
                 return $http({
                     method:'GET',
@@ -1128,7 +1134,7 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             param = param?param:'';
             path2 = path2?path2:'';
             if(httpWorker.checkCookie('ARC_UserToken')!=null){
-                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
+//                httpWorker.reqSpecs.headers.ARC_UserToken=httpWorker.checkCookie('ARC_UserToken');
                 httpWorker.checkAuthLogOut();
                 return $http({
                     method:'DELETE',
@@ -1142,9 +1148,10 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         };
         httpWorker.checkAuthLogOut = function(){
             httpWorker.getAuth(httpWorker.checkCookie('ARC_UserToken')).then(function(response){
+                console.log(resonse)
                 if(response.data!=true){
                     console.log('not logged in');
-                    logoutService.logout()
+//                    logoutService.logout()
                 }
 
             },function errorCallback(response){
@@ -1163,8 +1170,9 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             return $cookies.get(token)
         };
         httpWorker.getLogin = function(user){
+            console.log(user)
             return $http({
-                url:httpWorker.apiRoot.getPath()+'/Authorize/login/'+user.userName+'/'+user.password,
+                url:httpWorker.apiRoot.getPath()+'Authorize/login/'+user.userName+'/'+user.password,
                 method:'GET',
                 headers:''
             })
@@ -1172,12 +1180,12 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
         httpWorker.apiRoot = {
             //set setState as dev, prod, or local
             setState:'dev',
-            prod: 'https://prometheus.mdanderson.edu/dataapi/',
-            dev: 'https://gumedonc-dev.mdanderson.edu/dataapi/',
-            local: 'http://localhost:56700/',
-            prodRoot: 'https://prometheus.mdanderson.edu',
-            devRoot: 'https://gumedonc-dev.mdanderson.edu',
-            localRoot: 'http://localhost:56700',
+            prod: '',
+            dev: '',
+            local: 'http://localhost:8080/api/',
+            prodRoot: '',
+            devRoot: '',
+            localRoot: '',
             getPath: function(){
                 var thePath = httpWorker.apiRoot.local;
 
@@ -1189,33 +1197,29 @@ angular.module('data', ['ngRoute', 'ngCookies','toaster','LocalStorageModule','n
             url:'',
             headers:{
                 'content-type':'application/json',
-                'cache-control':'no-cache',
-                //'Cookie':'',
-                'ARC_UserToken':'',
-                'ArcAppPublicKey':'371507A2-C5FB-4842-9AD5-477BA3A33A68',
-                //private key for app
-                'ArcAppPrivateKey':'a48ddc36-dd81-49b6-95fe-dbaaa6a272ac'
+//                'cache-control':'no-cache',
+                //'Cookie':''
             }
         };
         return httpWorker;
     })
-    .service('trackPageAccess',function($window,$http){
-        var trackingWorker = {};
-        var trackingObject = {
-            path : window.location.href,
-            width : $window.window.innerWidth,
-            height : $window.window.innerHeight
-        };
-        trackingWorker.postData = function(){
-            console.log(trackingObject)
-            return $http({
-                data:{URL:trackingObject.path,height:trackingObject.height,width:trackingObject.width},
-                method:'POST',
-                url:'/Prometheus/Administration/Tracking/TrackPageAccess'
-            })
-        };
-        return trackingWorker;
-    })
+//    .service('trackPageAccess',function($window,$http){
+//        var trackingWorker = {};
+//        var trackingObject = {
+//            path : window.location.href,
+//            width : $window.window.innerWidth,
+//            height : $window.window.innerHeight
+//        };
+//        trackingWorker.postData = function(){
+//            console.log(trackingObject)
+//            return $http({
+//                data:{URL:trackingObject.path,height:trackingObject.height,width:trackingObject.width},
+//                method:'POST',
+//                url:'/Prometheus/Administration/Tracking/TrackPageAccess'
+//            })
+//        };
+//        return trackingWorker;
+//    })
     .config(function ($routeProvider) {
         $routeProvider
             .when('/home', {
