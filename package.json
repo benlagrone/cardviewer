@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/benlagrone/cardviewer.git"
+    "url": "git+https://github.com/benlagrone/cardviewer.git"
   },
   "author": "Ben LaGrone",
   "license": "ISC",
@@ -18,9 +18,13 @@
     "gulp-connect": "^5.0.0",
     "gulp-livereload": "^3.8.1"
   },
-  "description": "",
   "dependencies": {
     "express": "^4.14.0",
     "mongoose": "^4.7.2"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/benlagrone/cardviewer/issues"
+  },
+  "homepage": "https://github.com/benlagrone/cardviewer#readme",
+  "description": ""
 }
