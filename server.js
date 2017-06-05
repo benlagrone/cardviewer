@@ -2,10 +2,23 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+
+var allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', "*");
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+}
+
 mongoose.connect('mongodb://localhost:27017/talent')
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+// app.configure(function() {
+app.use(allowCrossDomain);
+//some other code
+// });
+
 
 var port = process.env.port || 8080;
 
@@ -18,6 +31,9 @@ var Users = require('./models/sampleData/users');
 var Question = require('./models/question');
 var Questions = require('./models/sampleData/questions');
 var QuestionLibrary = require('./models/questionlibrary');
+var QuestionLibraries = require('./models/sampleData/questionlibraries');
+var Category = require('./models/category');
+var Categories = require('./models/sampleData/categories');
 var Assessment = require('./models/assessment');
 var Assessments = require('./models/sampleData/assessments');
 router.use(function(req, res, next) {
@@ -78,6 +94,25 @@ router.route('questionlibrary/:questionlibrary_id')
                 res.send(err)
 
             res.json({ message: 'Deleted success' });
+        });
+    });
+
+router.route('/category')
+    .post(function(req, res) {
+        var category = new Category();
+        category.name = req.body.name;
+
+        category.save(function(err) {
+            if (err)
+                res.send(err);
+            res.json({ message: 'category created' });
+        })
+    })
+    .get(function(req, res) {
+        Category.find(function(err, category) {
+            if (err)
+                res.send(err);
+            res.json(category);
         });
     });
 
@@ -196,6 +231,7 @@ router.route('/user')
     })
     .get(function(req, res) {
         User.find(function(err, user) {
+            console.log(user)
             if (err)
                 res.send(err);
             res.json(user);
